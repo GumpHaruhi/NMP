@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>My Music</title>
+    <style>
+        /* 添加一点点样式 */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    
+        #playerControls {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+    
+        #coverArt {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            display: none;
+        }
+    
+        #lyricsContainer {
+            width: 300px;
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+            /* 确保 padding 不会撑大宽度 */
+            white-space: pre-wrap;
+            /* 保持换行 */
+            background: #f9f9f9;
+            display: none;
+        }
+    
+        #songList {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>My Music Player</h1>
+    
+    <div id="playerControls">
+        <img id="coverArt" src="" alt="Cover Art" />
+    
+        <pre id="lyricsContainer"></pre>
+    </div>
+    
+    <audio id="player" controls style="width: 620px; margin-top: 10px;"></audio>
+    
+    <h3>Songs:</h3>
+    <ul id="songList">
+    </ul>
+    
+    <script src="/app.js"></script>
+</body>
+
+</html>
