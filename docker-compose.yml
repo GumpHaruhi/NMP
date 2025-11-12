@@ -7,8 +7,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      # 把你宿主机的音乐目录 映射到 容器内的 /music 目录
-      # - ~/Documents/MyCode/NMP/music:/music:ro
       - ./music:/music:ro
     depends_on:
       - db

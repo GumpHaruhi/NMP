@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"io/ioutil"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -38,7 +37,7 @@ func InitDB() {
 // SeedData 读取并执行 seed.sql 文件
 func SeedData(db *pgxpool.Pool) {
 	// 1. 读取 SQL 文件
-	seedSql, err := ioutil.ReadFile("/database/seed.sql")
+	seedSql, err := os.ReadFile("/database/seed.sql")
 	if err != nil {
 		log.Printf("Warning: Could not read seed.sql file: %v. Skipping seeding.", err)
 		return

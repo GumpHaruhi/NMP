@@ -31,7 +31,7 @@ WORKDIR /app
 # 安装必要工具
 RUN apk add --no-cache ca-certificates
 
-RUN mkdir /music
+RUN mkdir /music && chmod 777 /music
 
 # 从 'builder' 阶段复制编译好的二进制文件
 COPY --from=builder /NMP /NMP
