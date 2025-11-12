@@ -1,109 +1,120 @@
 package core
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const MusicRoot = "/music"
 
-func RegisterRoutes(router *gin.Engine) {
-	// === 获取歌曲列表 ===
+func RegisterRoutes(router *gin.Engine, db *pgxpool.Pool) {
+	// === API 1: 获取歌曲列表 (从数据库读取) ===
 	router.GET("/api/songs", func(c *gin.Context) {
-		var songs []Music // 使用新的 struct
+		var songs []Music
 
-		err := filepath.Walk(MusicRoot, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			if !info.IsDir() && strings.HasSuffix(info.Name(), ".mp3") {
-				relativePath, _ := filepath.Rel(MusicRoot, path)
-				basePath := strings.TrimSuffix(relativePath, ".mp3")
-				title := filepath.Base(basePath)
-
-				song := Music{
-					Title: title,
-					// 使用 url.PathEscape 来确保文件名中的空格等被正确编码
-					AudioURL:  fmt.Sprintf("/api/stream/%s", url.PathEscape(relativePath)),
-					LyricsURL: "",
-					CoverURL:  "",
-				}
-
-				// 检查 .lrc 文件是否存在
-				lrcPath := filepath.Join(MusicRoot, basePath+".lrc")
-				if _, err := os.Stat(lrcPath); err == nil {
-					song.LyricsURL = fmt.Sprintf("/api/lyrics/%s.lrc", url.PathEscape(basePath))
-				}
-
-				// 检查 .jpg 文件是否存在
-				// jpgPath := filepath.Join(MusicRoot, basePath+".jpg")
-				// if _, err := os.Stat(jpgPath); err == nil {
-				// 	song.CoverURL = fmt.Sprintf("/api/cover/%s.jpg", url.PathEscape(basePath))
-				// }
-				song.CoverURL = "/api/cover/temp.jpg"
-
-				songs = append(songs, song)
-			}
-			return nil
-		})
-
+		// 从数据库查询 music 表
+		query := `SELECT title, singer, audio_path, cover_path, lyrics_path, labels, delabels FROM music`
+		rows, err := db.Query(context.Background(), query)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan music directory"})
+			log.Printf("Database query error: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query songs"})
 			return
 		}
+		defer rows.Close()
 
-		// 返回 JSON 对象数组
+		for rows.Next() {
+			var s Music
+			// 用 sql.NullString 来安全地接收
+			var audioPath, coverPath, lyricsPath sql.NullString
+			// 数据库中的 TEXT[] 映射到 Go 的 []string
+			var labels, delabels []string
+
+			err := rows.Scan(
+				&s.Title,
+				&s.Singer,
+				&audioPath,
+				&coverPath,
+				&lyricsPath,
+				&labels,
+				&delabels,
+			)
+			if err != nil {
+				log.Printf("Row scan error: %v", err)
+				continue
+			}
+
+			// --- 关键：从数据库路径构建 API URL ---
+			if audioPath.Valid {
+				s.AudioURL = fmt.Sprintf("/api/stream/%s", url.PathEscape(audioPath.String))
+			}
+			if coverPath.Valid {
+				s.CoverURL = fmt.Sprintf("/api/cover/%s", url.PathEscape(coverPath.String))
+			}
+			if lyricsPath.Valid {
+				s.LyricsURL = fmt.Sprintf("/api/lyrics/%s", url.PathEscape(lyricsPath.String))
+			}
+
+			// 将 []string 转换为 []Label (我们的模型类型)
+			for _, l := range labels {
+				s.Labels = append(s.Labels, Label(l))
+			}
+			for _, l := range delabels {
+				s.DeLabels = append(s.DeLabels, Label(l))
+			}
+
+			songs = append(songs, s)
+		}
+
 		c.JSON(http.StatusOK, songs)
 	})
 
 	// === 播放音频流 ===
 	router.GET("/api/stream/*songPath", func(c *gin.Context) {
-		songPath := c.Param("songPath")
-		fullPath := filepath.Join(MusicRoot, filepath.Clean(songPath))
-
-		if !strings.HasPrefix(fullPath, MusicRoot) {
-			c.String(http.StatusForbidden, "Forbidden")
-			return
-		}
-
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			c.String(http.StatusNotFound, "Song not found")
-			return
-		}
-
-		http.ServeFile(c.Writer, c.Request, fullPath)
+		serveAsset(c, c.Param("songPath"))
 	})
 
 	// === 提供歌词文件 ===
 	router.GET("/api/lyrics/*assetPath", func(c *gin.Context) {
-		assetPath := c.Param("assetPath")
-		fullPath := filepath.Join(MusicRoot, filepath.Clean(assetPath))
-
-		if !strings.HasPrefix(fullPath, MusicRoot) {
-			c.String(http.StatusForbidden, "Forbidden")
-			return
-		}
-		// 使用 c.File()，它会自动设置 "Content-Type: text/plain"
-		c.File(fullPath)
+		serveAsset(c, c.Param("assetPath"))
 	})
 
 	// === 提供海报文件 ===
 	router.GET("/api/cover/*assetPath", func(c *gin.Context) {
-		assetPath := c.Param("assetPath")
-		fullPath := filepath.Join(MusicRoot, filepath.Clean(assetPath))
-
-		if !strings.HasPrefix(fullPath, MusicRoot) {
-			c.String(http.StatusForbidden, "Forbidden")
-			return
-		}
-		// 使用 c.File()，它会自动设置 "Content-Type: image/jpeg"
-		c.File(fullPath)
+		serveAsset(c, c.Param("assetPath"))
 	})
+}
+
+// 提供 /music 目录下的文件
+func serveAsset(c *gin.Context, assetPath string) {
+	// URL 解码
+	decodedPath, err := url.PathUnescape(assetPath)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid path")
+		return
+	}
+	
+	fullPath := filepath.Join(MusicRoot, filepath.Clean(decodedPath))
+
+	if !strings.HasPrefix(fullPath, MusicRoot) {
+		c.String(http.StatusForbidden, "Forbidden")
+		return
+	}
+
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		c.String(http.StatusNotFound, "Asset not found")
+		return
+	}
+
+	// ServeFile 会自动处理 Range Requests 和 Content-Type
+	http.ServeFile(c.Writer, c.Request, fullPath)
 }

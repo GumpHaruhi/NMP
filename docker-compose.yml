@@ -2,17 +2,35 @@ version: '3.8'
 
 services:
   musicapp:
-    # 告诉 compose 使用当前目录的 Dockerfile 来构建镜像
     build: .
-    # 容器名称
     container_name: NMP-services
-    # 端口映射：[宿主机端口]:[容器端口]
     ports:
       - "8080:8080"
-    # *** 关键的音量挂载 ***
     volumes:
       # 把你宿主机的音乐目录 映射到 容器内的 /music 目录
-      # !!! 你需要修改下面这行 !!!
-      - ~/Documents/MyCode/NMP/music:/music:ro
-    # 重启策略
+      # - ~/Documents/MyCode/NMP/music:/music:ro
+      - ./music:/music:ro
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://LiHua:12345678@db:5432/musicdb?sslmode=disable
     restart: unless-stopped
+  
+  # PostgreSQL 数据库服务
+  db:
+    image: postgres:15-alpine
+    container_name: NMP-db
+    environment:
+      # 设置数据库的超级用户、密码和默认数据库名
+      # 必须与上面的 DATABASE_URL 匹配
+      - POSTGRES_USER=LiHua
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=musicdb
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+# 定义命名的 volume
+volumes:
+  postgres-data:
