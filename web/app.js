@@ -9,19 +9,33 @@ window.addEventListener('load', () => {
     fetch('/api/songs')
         .then(response => response.json())
         .then(songs => {
-            // `songs` 现在是一个对象数组: [{title: "...", audioUrl: "..."}]
+            // `songs` 现在是一个对象数组: 每项可能有不同的字段命名，支持多种情况
 
             songs.forEach(song => {
+                // 兼容不同的 JSON 命名：musicMessage/musicSource 或 Message/Source
+                const msg = song.musicMessage || song.Message || song.message || {};
+                const src = song.musicSource || song.Source || song.source || {};
+
+                const id = msg.id || msg.Id || msg.ID;
+                const title = msg.title || msg.Title || src.title || 'Unknown';
+
                 const li = document.createElement('li');
-                li.textContent = song.title; // 显示歌曲标题
-                // li.style.cursor = 'pointer'; // (我们把 cursor 移到 CSS 里了)
+                li.textContent = title; // 显示歌曲标题
 
                 // 3. 添加点击事件
                 li.addEventListener('click', () => {
-                    console.log(`Setting player src to: ${song.audioUrl}`);
+                    // Prefer playing by id endpoint. Fallback to provided audio url if id missing.
+                    let audioUrl = '';
+                    if (id !== undefined && id !== null) {
+                        audioUrl = `/api/music/play/${id}`;
+                    } else {
+                        audioUrl = src.audioUrl || src.AudioURL || src.url || '';
+                    }
+
+                    console.log(`Setting player src to: ${audioUrl}`);
 
                     // A. 播放音频
-                    player.src = song.audioUrl;
+                    player.src = audioUrl;
                     const playPromise = player.play();
 
                     if (playPromise !== undefined) {
@@ -31,20 +45,22 @@ window.addEventListener('load', () => {
                     }
 
                     // B. 更新海报
-                    if (song.coverUrl) {
-                        coverArt.src = song.coverUrl;
+                    const coverUrl = src.coverUrl || src.CoverURL || src.cover || '';
+                    if (coverUrl) {
+                        coverArt.src = coverUrl;
                         coverArt.style.display = 'block'; // 显示图片
                     } else {
                         coverArt.style.display = 'none'; // 没有海报则隐藏
                     }
 
                     // C. 更新歌词
-                    if (song.lyricsUrl) {
+                    const lyricsUrl = src.lyricsUrl || src.LyricsURL || src.lyrics || '';
+                    if (lyricsUrl) {
                         lyricsContainer.style.display = 'block'; // 显示歌词框
                         lyricsContainer.textContent = 'Loading lyrics...'; // 占位符
 
                         // C.1. 异步获取 .lrc 文件
-                        fetch(song.lyricsUrl)
+                        fetch(lyricsUrl)
                             .then(response => response.text())
                             .then(text => {
                                 // C.2. (MVP) 简单的歌词解析：

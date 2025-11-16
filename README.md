@@ -83,3 +83,12 @@ VALUES
 
 1. **用户登录**
 
+POST：/api/login
+
+
+2. **歌曲**
+
+播放id为 music_id 的歌曲：
+
+GET:/api/music/play/{music_id}
+
