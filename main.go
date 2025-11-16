@@ -11,8 +11,8 @@ import (
 func main() {
 	// 初始数据库
 	database.InitDB()
-	// database.SeedData(database.DB)
-	defer database.DB.Close()
+	// 如需执行 SQL 文件的种子逻辑，可用 database.SeedData 的等价实现
+	defer database.CloseDB()
 
 	// 注册API
 	router := gin.Default()

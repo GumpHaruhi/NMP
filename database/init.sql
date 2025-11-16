@@ -43,3 +43,4 @@ VALUES
     ('可惜没如果', '林俊杰', 'noifs.mp3', 'temp.jpg', 'noifs.lrc', ARRAY['HipHop'], ARRAY['HipHop', 'Rock']),
     ('嘉宾', '张远', 'guest.mp3', 'temp.jpg', 'guest.lrc', ARRAY['Pop'], ARRAY['HipHop', 'Rock']),
     ('不是因为寂寞才想你', 'T.R.Y', 'TRY.mp3', 'temp.jpg', 'TRY.lrc', ARRAY['Pop'], ARRAY['HipHop', 'Rock']);
+

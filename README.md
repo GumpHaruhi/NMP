@@ -77,3 +77,9 @@ VALUES
     ('不是因为寂寞才想你', 'T.R.Y', 'TRY.mp3', 'temp.jpg', 'TRY.lrc', ARRAY['Pop'], ARRAY['HipHop', 'Rock']);
 ```
 3. 执行 `docker compose down --volumes` 清理卷宗，然后重新构建
+
+
+## API文档
+
+1. **用户登录**
+
