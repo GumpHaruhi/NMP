@@ -11,7 +11,6 @@ NMP
 ├── Dockerfile          // docker配置
 ├── README.md           // 项目说明
 ├── core                // 后端核心文件
-├── database            // 数据库核心文件
 ├── docker-compose.yml  // docker服务治理
 ├── web                 // 前端核心文件
 ├── music               // 音频、图片、歌词等资源文件
@@ -20,34 +19,6 @@ NMP
 ```
 
 > 注意，考虑到音频文件过大，将不通过git进行同步管理（git已将music文件目录屏蔽）。我们手动同步 music 文件夹
-
-**数据结构**：
-
-歌曲信息（结构体、表字段）暂时为：
-
-```
-// 标签
-type Label string
-const (
-	LabelPop       Label = "Pop"
-	LabelRock      Label = "Rock"
-	LabelJazz      Label = "Jazz"
-	LabelClassical Label = "Classical"
-	LabelHipHop    Label = "HipHop"
-    // 更多标签分类...
-)
-
-// 音乐
-type Music struct {
-	Title     string  `json:"title"`    // 标题
-	Singer	  string  `json:"singer"`   // 歌手
-	AudioURL  string  `json:"audioUrl"` // 音频路径
-	CoverURL  string  `json:"coverUrl"` // 海报路径
-	LyricsURL string  `json:"lyricsUrl"`// 歌词路径
-	Labels    []Label `json:"labels"`   // 标签
-	DeLabels  []Label `json:"delabels"` // 非标签
-}
-```
 
 ## 部署&运行
 
@@ -68,12 +39,10 @@ type Music struct {
 **如何设置音频资源？**
 
 1. 下载.mp3格式音频文件，.jpg格式海报，.lrc格式歌词文件（格式后期可以支持多模态）（分享个[网站](https://www.gequbao.com/)），放在 /music 文件夹中
-2. 修改 /database/init.sql ，在插入语句中编写相关文件信息，例如：
-```
--- 在这里插入歌曲的信息
-INSERT INTO music (title, singer, audio_path, cover_path, lyrics_path, labels, delabels)
-VALUES 
-    ('晴天', '周杰伦', 'qingtian.mp3', 'temp.jpg', 'qingtian.lrc', ARRAY['Pop', 'Rock'], ARRAY['HipHop']),
-    ('不是因为寂寞才想你', 'T.R.Y', 'TRY.mp3', 'temp.jpg', 'TRY.lrc', ARRAY['Pop'], ARRAY['HipHop', 'Rock']);
-```
+2. 修改 /music/seed.json ，在插入语句中编写相关文件信息，歌曲、歌单信息都支持。**具体格式请模仿已有的内容！**
 3. 执行 `docker compose down --volumes` 清理卷宗，然后重新构建
+
+
+## API文档
+
+见 API.md

@@ -9,7 +9,8 @@ services:
     volumes:
       - ./music:/music:ro
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgres://LiHua:12345678@db:5432/musicdb?sslmode=disable
     restart: unless-stopped
@@ -25,8 +26,13 @@ services:
       - POSTGRES_PASSWORD=12345678
       - POSTGRES_DB=musicdb
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U LiHua -d musicdb"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
     restart: unless-stopped
 
 # 定义命名的 volume
