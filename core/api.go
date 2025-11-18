@@ -2,7 +2,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -15,19 +14,42 @@ import (
 	"gorm.io/gorm"
 )
 
-const MusicRoot = "/music"
+const MusicRoot string = "/music"
+const StarPlaylistID int64 = 1 // 预定义“收藏”歌单 ID
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
-	RegisterRoutesMusic(router, db)
-	RegisterRoutesPlaylist(router, db)
-	RegisterRoutesUser(router, db)
-
+	// 健康检查
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
 
-	router.GET("/api/database/music", func(c *gin.Context) {
-		musics, err := GetAllMusic()
+	// 用户登陆
+	router.GET("/api/user/login", func(c *gin.Context) {
+		lists, err := GetAllPlaylists()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "用户登录失败",
+				"error":   err.Error(),
+				"data":    nil,
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "登录成功",
+			"data": gin.H{
+				"userId":    1,
+				"username":  "testuser",
+				"playlists": lists,
+			},
+		})
+	})
+
+	// 查询所有音乐
+	router.GET("/api/check/music", func(c *gin.Context) {
+		musics, err := GetAllSongs()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"code":    http.StatusInternalServerError,
@@ -47,35 +69,204 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		})
 	})
 
-	// === API 1: 获取歌曲列表 (从数据库读取) ===
-	router.GET("/api/songs", func(c *gin.Context) {
-		var songs []Music
-		// 使用 GORM 读取所有歌曲
-		if err := db.Find(&songs).Error; err != nil {
-			log.Printf("Database query error: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query songs"})
+	// 查询所有歌单
+	router.GET("/api/check/playlist", func(c *gin.Context) {
+		lists, err := GetAllPlaylists()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "查询歌单数据失败",
+				"error":   err.Error(),
+				"data":    nil,
+			})
 			return
 		}
-
-		// 将存储的路径转换为可访问的 API URL
-		for i := range songs {
-			s := &songs[i]
-			// serve by id endpoint for audio so frontend can request by music id
-			if s.Source.AudioURL != "" {
-				s.Source.AudioURL = fmt.Sprintf("/api/music/play/%d", s.Message.Id)
-			}
-			if s.Source.CoverURL != "" {
-				s.Source.CoverURL = fmt.Sprintf("/api/cover/%s", url.PathEscape(s.Source.CoverURL))
-			}
-			if s.Source.LyricsURL != "" {
-				s.Source.LyricsURL = fmt.Sprintf("/api/lyrics/%s", url.PathEscape(s.Source.LyricsURL))
-			}
-		}
-
-		c.JSON(http.StatusOK, songs)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "查询成功",
+			"data": gin.H{
+				"total": len(lists), // 数据总数
+				"list":  lists,      // 歌单数据列表
+			},
+		})
 	})
 
-	// 播放（按 id）: GET /api/music/play/:id
+	// 查询歌单详细信息
+	router.GET("/api/playlist/detail/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    http.StatusBadRequest,
+				"message": "歌单ID格式错误",
+				"error":   err.Error(),
+				"data":    nil,
+			})
+			return
+		}
+		playlist, err := GetPlaylistByID(id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "查询歌单详情失败",
+				"error":   err.Error(),
+				"data":    nil,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "查询成功",
+			"data":    playlist,
+		})
+	})
+
+	// 将歌曲添加到歌单
+	router.POST("/api/playlist/addsong", func(c *gin.Context) {
+		var req struct {
+			PlaylistID int64 `json:"playlistId"`
+			MusicID    int64 `json:"musicId"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    http.StatusBadRequest,
+				"message": "请求参数格式错误",
+				"error":   err.Error(),
+			})
+			return
+		}
+		err := AddSongToPlaylist(req.PlaylistID, req.MusicID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "添加歌曲到歌单失败",
+				"error":   err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "添加成功",
+		})
+	})
+
+	// 将歌曲移除歌单
+	router.POST("/api/playlist/removesong", func(c *gin.Context) {
+		var req struct {
+			PlaylistID int64 `json:"playlistId"`
+			MusicID    int64 `json:"musicId"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    http.StatusBadRequest,
+				"message": "请求参数格式错误",
+				"error":   err.Error(),
+			})
+			return
+		}
+		err := RemoveSongFromPlaylist(req.PlaylistID, req.MusicID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "从歌单移除歌曲失败",
+				"error":   err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "移除成功",
+		})
+	})
+
+	// 新建空白歌单
+	router.POST("/api/playlist/create", func(c *gin.Context) {
+		var req struct {
+			Name        string `json:"name"`
+			Description string `json:"description"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    http.StatusBadRequest,
+				"message": "请求参数格式错误",
+				"error":   err.Error(),
+			})
+			return
+		}
+		playlist, err := CreatePlaylist(req.Name, req.Description)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "创建歌单失败",
+				"error":   err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "创建成功",
+			"data":    playlist,
+		})
+	})
+
+	// 删除歌单
+	router.POST("/api/playlist/delete", func(c *gin.Context) {
+		var req struct {
+			PlaylistID int64 `json:"playlistId"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    http.StatusBadRequest,
+				"message": "请求参数格式错误",
+				"error":   err.Error(),
+			})
+			return
+		}
+		err := DeletePlaylist(req.PlaylistID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "删除歌单失败",
+				"error":   err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "删除成功",
+		})
+	})
+
+	// 根据标签检索音乐
+	router.POST("/api/music/search/labels", func(c *gin.Context) {
+		var req struct {
+			Labels []string `json:"labels"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    http.StatusBadRequest,
+				"message": "请求参数格式错误",
+				"error":   err.Error(),
+			})
+			return
+		}
+		songs, err := SearchMusicByLabels(req.Labels)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "根据标签检索音乐失败",
+				"error":   err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "检索成功",
+			"data":    songs,
+		})
+	})
+
+	// 播放音乐
 	router.GET("/api/music/play/:id", func(c *gin.Context) {
 		idStr := c.Param("id")
 		id, err := strconv.ParseInt(idStr, 10, 64)
@@ -91,40 +282,109 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 				return
 			}
 			log.Printf("DB error when fetching music id=%d: %v", id, err)
-			c.String(http.StatusInternalServerError, "Internal server error")
+			c.String(http.StatusInternalServerError, "Internal server error:"+err.Error())
 			return
 		}
 
-		// m.Source.AudioURL 存储的是相对路径（例如 qingtian.mp3）
-		serveAsset(c, m.Source.AudioURL)
+		// m.Source.AudioURL 存储的是相对路径
+		serveAsset(c, m.AudioURL)
 	})
 
-	// === 播放音频流 (legacy, still available) ===
-	router.GET("/api/stream/*songPath", func(c *gin.Context) {
-		serveAsset(c, c.Param("songPath"))
+	// 提供歌词
+	router.GET("/api/music/lyrics/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid id")
+			return
+		}
+
+		var m Music
+		if err := db.First(&m, id).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.String(http.StatusNotFound, "Music not found")
+				return
+			}
+			log.Printf("DB error when fetching music id=%d: %v", id, err)
+			c.String(http.StatusInternalServerError, "Internal server error:"+err.Error())
+			return
+		}
+
+		// m.Source.AudioURL 存储的是相对路径
+		serveAsset(c, m.LyricsURL)
 	})
 
-	// === 提供歌词文件 ===
-	router.GET("/api/lyrics/*assetPath", func(c *gin.Context) {
-		serveAsset(c, c.Param("assetPath"))
+	// 提供歌曲海报
+	router.GET("/api/music/cover/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid id")
+			return
+		}
+
+		var m Music
+		if err := db.First(&m, id).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.String(http.StatusNotFound, "Music not found:"+err.Error())
+				return
+			}
+			log.Printf("DB error when fetching music id=%d: %v", id, err)
+			c.String(http.StatusInternalServerError, "Internal server error:"+err.Error())
+			return
+		}
+
+		// m.Source.AudioURL 存储的是相对路径
+		serveAsset(c, m.CoverURL)
 	})
 
-	// === 提供海报文件 ===
-	router.GET("/api/cover/*assetPath", func(c *gin.Context) {
-		serveAsset(c, c.Param("assetPath"))
+	// 歌曲反馈：喜欢
+	router.GET("/api/music/like/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid id:"+err.Error())
+			return
+		}
+
+		// 这里只是示例，实际应用中应记录用户反馈到数据库
+		log.Printf("User like music id=%d", id)
+		c.String(http.StatusOK, "Like")
 	})
-}
 
-func RegisterRoutesUser(router *gin.Engine, db *gorm.DB) {
+	// 歌曲反馈：不喜欢
+	router.GET("/api/music/dislike/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid id:"+err.Error())
+			return
+		}
 
-}
+		// 这里只是示例，实际应用中应记录用户反馈到数据库
+		log.Printf("User dislike music id=%d", id)
+		c.String(http.StatusOK, "Dislike")
+	})
 
-func RegisterRoutesMusic(router *gin.Engine, db *gorm.DB) {
+	// 歌曲反馈：收藏
+	router.GET("/api/music/star/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		musicID, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid id:"+err.Error())
+			return
+		}
 
-}
-
-func RegisterRoutesPlaylist(router *gin.Engine, db *gorm.DB) {
-
+		// 添加到固定的收藏歌单
+		err = AddSongToPlaylist(StarPlaylistID, musicID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to star music:"+err.Error())
+			return
+		}
+		// 这里只是示例，实际应用中应记录用户反馈到数据库
+		log.Printf("User star music id=%d", musicID)
+		c.String(http.StatusOK, "Star!")
+	})
 }
 
 // 提供 /music 目录下的文件

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -86,8 +87,12 @@ func seedData(db *gorm.DB) {
 		Items         []seedPlaylistItem `json:"items"`
 	}
 	type seedMusic struct {
-		Message MusicMessage `json:"message"`
-		Source  MusicSource  `json:"source"`
+		Title     string         `json:"title"`
+		Singer    string         `json:"singer"`
+		Labels    pq.StringArray `json:"labels"`
+		AudioURL  string         `json:"audioUrl"`
+		CoverURL  string         `json:"coverUrl"`
+		LyricsURL string         `json:"lyricsUrl"`
 	}
 	type seedFile struct {
 		Music     []seedMusic    `json:"music"`
@@ -115,11 +120,15 @@ func seedData(db *gorm.DB) {
 	// 插入/创建歌曲数据
 	for _, m := range s.Music {
 		mm := Music{
-			Message: m.Message,
-			Source:  m.Source,
+			Title:     m.Title,
+			Singer:    m.Singer,
+			Labels:    m.Labels,
+			AudioURL:  m.AudioURL,
+			CoverURL:  m.CoverURL,
+			LyricsURL: m.LyricsURL,
 		}
-		if err := db.Where("audio_path = ?", mm.Source.AudioURL).FirstOrCreate(&mm).Error; err != nil {
-			log.Printf("failed to create music %s: %v", mm.Message.Title, err)
+		if err := db.Where("audio_path = ?", mm.AudioURL).FirstOrCreate(&mm).Error; err != nil {
+			log.Printf("failed to create music %s: %v", mm.Title, err)
 		}
 	}
 
@@ -143,7 +152,7 @@ func seedData(db *gorm.DB) {
 
 			pi := PlaylistItem{}
 			// 使用 Where + Assign + FirstOrCreate 保证唯一性并更新 track order
-			if err := db.Where(PlaylistItem{PlaylistID: pl.ID, MusicID: m.Message.Id}).
+			if err := db.Where(PlaylistItem{PlaylistID: pl.ID, MusicID: m.Id}).
 				Assign(PlaylistItem{TrackOrder: it.TrackOrder}).
 				FirstOrCreate(&pi).Error; err != nil {
 				log.Printf("failed to create playlist item for playlist %s music %s: %v", pl.Name, it.MusicAudioURL, err)

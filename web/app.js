@@ -1,3 +1,5 @@
+// 注意！此文件内容已经不再生效！！！请重新编写
+
 window.addEventListener('load', () => {
     // 获取所有新旧元素
     const player = document.getElementById('player');
