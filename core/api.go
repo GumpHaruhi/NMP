@@ -241,6 +241,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.POST("/api/music/search/labels", func(c *gin.Context) {
 		var req struct {
 			Labels []string `json:"labels"`
+			Limit  *int     `json:"limit"`
 		}
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -250,7 +251,13 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 			})
 			return
 		}
-		songs, err := SearchMusicByLabels(req.Labels)
+
+		numLimit := 20 // 默认限制20首
+		if req.Limit != nil {
+			numLimit = *req.Limit
+		}
+
+		songs, err := SearchMusicByLabels(req.Labels, numLimit)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"code":    http.StatusInternalServerError,
@@ -263,6 +270,26 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 			"code":    http.StatusOK,
 			"message": "检索成功",
 			"data":    songs,
+		})
+	})
+
+	// 搜索框：模糊搜索音乐
+	router.GET("/api/music/search/text/:txt", func(c *gin.Context) {
+		queryStr := c.Param("txt")
+		songs, err := SearchMusicByText(queryStr)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "模糊搜索音乐失败",
+				"error":   err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "搜索成功",
+			"data":    songs,
+			"total":   len(songs),
 		})
 	})
 
@@ -286,7 +313,6 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 			return
 		}
 
-		// m.Source.AudioURL 存储的是相对路径
 		serveAsset(c, m.AudioURL)
 	})
 
@@ -310,7 +336,6 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 			return
 		}
 
-		// m.Source.AudioURL 存储的是相对路径
 		serveAsset(c, m.LyricsURL)
 	})
 
@@ -334,7 +359,6 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 			return
 		}
 
-		// m.Source.AudioURL 存储的是相对路径
 		serveAsset(c, m.CoverURL)
 	})
 
@@ -381,9 +405,27 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 			c.String(http.StatusInternalServerError, "Failed to star music:"+err.Error())
 			return
 		}
-		// 这里只是示例，实际应用中应记录用户反馈到数据库
 		log.Printf("User star music id=%d", musicID)
 		c.String(http.StatusOK, "Star!")
+	})
+
+	// 歌曲反馈：取消收藏
+	router.GET("/api/music/unstar/:id", func(c *gin.Context) {
+		idStr := c.Param("id")
+		musicID, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid id:"+err.Error())
+			return
+		}
+
+		// 从固定的收藏歌单移除
+		err = RemoveSongFromPlaylist(StarPlaylistID, musicID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to unstar music:"+err.Error())
+			return
+		}
+		log.Printf("User unstar music id=%d", musicID)
+		c.String(http.StatusOK, "Unstar!")
 	})
 }
 
