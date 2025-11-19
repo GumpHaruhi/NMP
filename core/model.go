@@ -200,13 +200,23 @@ func DeletePlaylist(playlistID int64) error {
 }
 
 // 根据标签检索音乐
-func SearchMusicByLabels(labels []string) ([]Music, error) {
+func SearchMusicByLabels(labels []string, limit int) ([]Music, error) {
 	var songs []Music
 
 	// 使用 Postgres 的 && 操作符 (数组重叠)
 	// 只要 labels 字段包含参数中的*任意*一个标签，就算匹配
 	// pq.StringArray(labels) 会将 Go切片 转换为 Postgres 数组格式 '{Pop,Rock}'
-	err := DB.Where("labels && ?", pq.StringArray(labels)).Find(&songs).Error
+	err := DB.Where("labels && ?", pq.StringArray(labels)).Limit(limit).Find(&songs).Error
+
+	return songs, err
+}
+
+// 根据名称模糊搜索音乐
+func SearchMusicByText(text string) ([]Music, error) {
+	var songs []Music
+	pattern := fmt.Sprintf("%%%s%%", text) // 构造模糊匹配模式
+
+	err := DB.Where("title ILIKE ? OR singer ILIKE ?", pattern, pattern).Find(&songs).Error
 
 	return songs, err
 }
