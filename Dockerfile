@@ -1,6 +1,6 @@
 # --- 阶段 1: 构建 Go 程序 ---
 # 使用官方的 golang 镜像 (alpine 版本更小)
-FROM golang:1.23-alpine AS builder
+FROM docker.m.daocloud.io/golang:1.23-alpine AS builder
 
 # 设置工作目录
 WORKDIR /app
