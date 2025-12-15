@@ -42,7 +42,7 @@ import {ref, computed, onMounted, watch} from 'vue'
 import { useColorStore } from './stores/colorStore'
 import { useMusicStore } from './stores/musicStore'
 import AppHeader from './components/AppHeader.vue'
-import BottomPlayerBar from './components/BottomPlayerBar..vue'
+import BottomPlayerBar from './components/BottomPlayerBar.vue'
 import {useRoute} from "vue-router";
 
 const route = useRoute() // 使用useRoute获取当前路由
