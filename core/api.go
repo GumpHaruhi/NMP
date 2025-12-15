@@ -296,7 +296,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// AI对话式生成歌单
 	router.POST("/api/ai-recommend", func(c *gin.Context) {
 		var req struct {
-			message str `json:"message"`
+			Message string `json:"message"`
 		}
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -308,7 +308,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		}
 
 		// call LLM
-		
+		reply, err := AgentWorkflow(req.Message)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -321,7 +321,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    http.StatusOK,
 			"message": "检索成功",
-			"data":    songs,
+			"data":    reply,
 		})
 	})
 

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -41,12 +41,15 @@ func NewLLMService() *LLMService {
 			timeout = parsed
 		}
 	}
-	return NewLLMService(LLMConfig{
-		APIURL:  apiURL,
-		Model:   model,
-		APIKey:  apiKey,
-		Timeout: timeout,
-	})
+	return &LLMService{
+		cfg: LLMConfig{
+			APIURL:  apiURL,
+			Model:   model,
+			APIKey:  apiKey,
+			Timeout: timeout,
+		},
+		client: &http.Client{},
+	}
 }
 
 type chatMessage struct {
@@ -64,8 +67,8 @@ type chatChoice struct {
 }
 
 type chatResponse struct {
-	Choices []chatChoice     `json:"choices"`
-	Error   interface{}      `json:"error"`
+	Choices []chatChoice `json:"choices"`
+	Error   interface{}  `json:"error"`
 	// 保留原始字段以便通用解析
 	Raw json.RawMessage `json:"-"`
 }
@@ -105,7 +108,7 @@ func (s *LLMService) Generate(systemPrompt, userInput string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
