@@ -32,6 +32,14 @@ const (
 	LabelHipHop    Label = "HipHop"
 )
 
+var AllLabels = []Label{
+	LabelPop,
+	LabelRock,
+	LabelJazz,
+	LabelClassical,
+	LabelHipHop,
+}
+
 // 音乐
 type Music struct {
 	Id        int64          `json:"id" gorm:"primaryKey;autoIncrement;column:id"`
