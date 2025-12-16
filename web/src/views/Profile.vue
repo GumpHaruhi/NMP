@@ -285,7 +285,7 @@
 </template>
 
 <script setup>
-import { ref, computled, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMusicStore } from '@/stores/musicStore'
 import SongItem from '@/components/SongItem.vue'

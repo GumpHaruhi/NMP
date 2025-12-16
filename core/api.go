@@ -293,8 +293,6 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		})
 	})
 
-<<<<<<< HEAD
-=======
 	// AI对话式生成歌单
 	router.POST("/api/ai-recommend", func(c *gin.Context) {
 		var req struct {
@@ -327,7 +325,6 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		})
 	})
 
->>>>>>> e0058a5b424b462c91736b42bf1983c7f1b56ae6
 	// 播放音乐
 	router.GET("/api/music/play/:id", func(c *gin.Context) {
 		idStr := c.Param("id")

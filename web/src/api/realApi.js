@@ -30,3 +30,6 @@ export const removeSongFromPlaylist = (playlistId, musicId) =>
 
 // 搜索相关
 export const searchByLabels = (labels) => apiClient.post('/music/search/labels', { labels })
+
+// AI生成歌单
+export const getRecommendationFromAI = (message) => apiClient.post('/ai-recommend', { message })

@@ -19,7 +19,8 @@ export const {
     searchByLabels,
     likeMusic,
     dislikeMusic,
-    starMusic
+    starMusic,
+    getAIRecommendation
 } = api
 
 // 工具函数

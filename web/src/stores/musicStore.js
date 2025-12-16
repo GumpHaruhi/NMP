@@ -12,8 +12,10 @@ import {
     likeMusic,
     dislikeMusic,
     starMusic,
-    userLogin
+    userLogin,
+    getAIRecommendation
 } from '@/api'
+import { getRecommendationFromAI } from '../api/realApi'
 
 export const useMusicStore = defineStore('music', () => {
     // 状态
@@ -33,6 +35,15 @@ export const useMusicStore = defineStore('music', () => {
     const allPlaylists = ref([]) // 所有歌单
     const currentPlaylist = ref(null) // 当前查看的歌单
     const searchResults = ref([]) // 搜索结果
+
+    // AI推荐相关
+    const aiRecommendation = ref({
+        reply: null,
+        playlist: [],
+        labels: []
+    })
+    const aiFavoritePlaylists = ref(new Set()) // 收藏的AI歌单ID集合
+    const aiChatHistory = ref([]) // AI对话历史
 
     // 用户相关
     const userInfo = ref(null)
@@ -66,6 +77,18 @@ export const useMusicStore = defineStore('music', () => {
 
     const isStarred = computed(() => (songId) => {
         return starredSongs.value.has(songId)
+    })
+
+    // AI推荐相关计算属性
+    const hasAIReply = computed(() => {
+        return !!aiRecommendation.value.reply?.content
+    })
+
+    const hasAIPlaylist = computed(() => {
+        return aiRecommendation.value.playlist.length > 0
+    })
+    const isAIFavorite = computed(() => (playlistId) => {
+        return aiFavoritePlaylists.value.has(playlistId)
     })
 
     // 获取所有音乐
@@ -393,6 +416,133 @@ export const useMusicStore = defineStore('music', () => {
         ])
     }
 
+     // 获取AI推荐歌单
+    const getAIRecommendation = async (message) => {
+        loading.value.aiRecommend = true
+        try {
+            // 添加到对话历史
+            aiChatHistory.value.push({
+                type: 'user',
+                content: message,
+                timestamp: new Date().toISOString()
+            })
+
+            const response = await getRecommendationFromAI(message)
+            if (response.code === 200) {
+                // 更新AI推荐数据
+                aiRecommendation.value = {
+                    reply: response.data.LLMReply,
+                    playlist: response.data.playlist || [],
+                    labels: response.data.LLMReply?.labels || []
+                }
+
+                // 添加到对话历史
+                if (response.data.LLMReply?.content) {
+                    aiChatHistory.value.push({
+                        type: 'ai',
+                        content: response.data.LLMReply.content,
+                        timestamp: new Date().toISOString(),
+                        labels: response.data.LLMReply.labels,
+                        playlistCount: response.data.playlist?.length || 0
+                    })
+                }
+
+                // 如果AI推荐了歌曲，可以自动设置为播放队列
+                if (response.data.playlist?.length > 0 && playQueue.value.length === 0) {
+                    playQueue.value = [...response.data.playlist]
+                }
+            }
+            return response
+        } catch (error) {
+            console.error('获取AI推荐失败:', error)
+            
+            // 添加错误信息到对话历史
+            aiChatHistory.value.push({
+                type: 'error',
+                content: '获取推荐失败，请稍后重试',
+                timestamp: new Date().toISOString()
+            })
+            
+            throw error
+        } finally {
+            loading.value.aiRecommend = false
+        }
+    }
+
+    // 播放AI推荐歌单
+    const playAIRecommendation = () => {
+        if (aiRecommendation.value.playlist.length > 0) {
+            playQueue.value = [...aiRecommendation.value.playlist]
+            if (aiRecommendation.value.playlist[0]) {
+                playSong(aiRecommendation.value.playlist[0])
+            }
+        }
+    }
+
+    // 清空AI对话历史
+    const clearAIChatHistory = () => {
+        aiChatHistory.value = []
+        aiRecommendation.value = {
+            reply: null,
+            playlist: [],
+            labels: []
+        }
+    }
+
+    // 将AI推荐保存为新歌单
+    const saveAIRecommendationAsPlaylist = async (playlistName, playlistDescription) => {
+        if (!playlistName || aiRecommendation.value.playlist.length === 0) {
+            throw new Error('请提供歌单名称或确保有推荐歌曲')
+        }
+
+        try {
+            // 创建新歌单
+            const createResponse = await createNewPlaylist({
+                name: playlistName || `AI推荐歌单 ${new Date().toLocaleDateString()}`,
+                description: playlistDescription || 'AI智能推荐的歌单',
+            })
+
+            if (createResponse.code === 200) {
+                const playlistId = createResponse.data.id
+                const songs = aiRecommendation.value.playlist || []
+
+                console.log(songs)
+                console.log(playlistId)
+                
+                const addPromises = songs.map(song => 
+                    addToPlaylist(playlistId, song.id)
+                )
+                
+                // 等待所有歌曲添加完成
+                const results = await Promise.allSettled(addPromises)
+                
+                // 检查是否有添加失败的情况
+                const failedAdds = results.filter(r => r.status === 'rejected' || 
+                    (r.status === 'fulfilled' && r.value?.code !== 200))
+                
+                if (failedAdds.length > 0) {
+                    console.warn(`部分歌曲添加失败: ${failedAdds.length}首`)
+                    // 可以选择记录哪些歌曲添加失败
+                }
+                
+                // 刷新歌单列表
+                await fetchAllPlaylists()
+                
+                return {
+                    ...createResponse,
+                    addedSongs: songs.length - failedAdds.length,
+                    totalSongs: songs.length,
+                    playlistId: playlistId
+                }
+            } else {
+                throw new Error(createResponse.message || '创建歌单失败')
+            }
+        } catch (error) {
+            console.error('保存AI推荐歌单失败:', error)
+            throw error
+        }
+    }
+
     return {
         // 状态
         currentSong,
@@ -407,6 +557,8 @@ export const useMusicStore = defineStore('music', () => {
         allPlaylists,
         currentPlaylist,
         searchResults,
+        aiRecommendation,
+        aiChatHistory,
         userInfo,
         likedSongs,
         starredSongs,
@@ -418,6 +570,8 @@ export const useMusicStore = defineStore('music', () => {
         progress,
         isLiked,
         isStarred,
+        hasAIReply,
+        hasAIPlaylist,
 
         // 方法
         fetchAllMusic,
@@ -445,6 +599,10 @@ export const useMusicStore = defineStore('music', () => {
         clearQueue,
         addToQueue,
         removeFromQueue,
-        initialize
+        initialize,
+        getAIRecommendation,
+        playAIRecommendation,
+        clearAIChatHistory,
+        saveAIRecommendationAsPlaylist,
     }
 })
