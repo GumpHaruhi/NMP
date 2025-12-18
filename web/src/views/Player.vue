@@ -421,7 +421,7 @@ const handleRetry = async () => {
 
 // 改进的歌词更新方法
 const updateCurrentLyric = () => {
-  if (!storeCurrentLyrics.value || storeCurrentLyrics.value.length === 0) {
+  if (!currentLyrics.value || currentLyrics.value.length === 0) {
     currentLyricIndex.value = -1
     return
   }
@@ -431,8 +431,8 @@ const updateCurrentLyric = () => {
   const current = currentTime.value
 
   // 从后往前查找当前应该显示的歌词
-  for (let i = storeCurrentLyrics.value.length - 1; i >= 0; i--) {
-    if (current >= storeCurrentLyrics.value[i].time) {
+  for (let i = crrentLyrics.value.length - 1; i >= 0; i--) {
+    if (current >= currentLyrics.value[i].time) {
       if (currentLyricIndex.value !== i) {
         currentLyricIndex.value = i
         scrollToCurrentLyric()
@@ -441,7 +441,7 @@ const updateCurrentLyric = () => {
     }
 
     // 如果当前时间小于第一句歌词的时间
-    if (i === 0 && current < storeCurrentLyrics.value[0].time) {
+    if (i === 0 && current < currentLyrics.value[0].time) {
       currentLyricIndex.value = -1
     }
   }

@@ -21,8 +21,8 @@ export const {
     dislikeMusic,
     starMusic,
     getLyrics,      // ✅ 添加缺失的导出
-    getCover        // ✅ 添加缺失的导出
-
+    getCover,        // ✅ 添加缺失的导出
+    getAIRecommendation
 } = api
 
 // 工具函数
