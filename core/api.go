@@ -293,41 +293,6 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		})
 	})
 
-<<<<<<< HEAD
-=======
-	// AI对话式生成歌单
-	router.POST("/api/ai-recommend", func(c *gin.Context) {
-		var req struct {
-			Message string `json:"message"`
-		}
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    http.StatusBadRequest,
-				"message": "参数解析错误",
-				"error":   err.Error(),
-			})
-			return
-		}
-
-		// call LLM
-		reply, err := AgentWorkflow(req.Message)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"code":    http.StatusInternalServerError,
-				"message": "大模型推荐失败",
-				"error":   err.Error(),
-			})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"code":    http.StatusOK,
-			"message": "检索成功",
-			"data":    reply,
-		})
-	})
-
->>>>>>> e0058a5b424b462c91736b42bf1983c7f1b56ae6
 	// 播放音乐
 	router.GET("/api/music/play/:id", func(c *gin.Context) {
 		idStr := c.Param("id")

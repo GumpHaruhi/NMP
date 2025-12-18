@@ -285,7 +285,7 @@
 </template>
 
 <script setup>
-import { ref, computled, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMusicStore } from '@/stores/musicStore'
 import SongItem from '@/components/SongItem.vue'
@@ -1232,21 +1232,6 @@ input:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 1px;
-}
-
-/* 高对比度支持 */
-@media (prefers-contrast: high) {
-  .user-card {
-    border-width: 2px;
-  }
-
-  .tab-btn.active {
-    font-weight: 700;
-  }
-
-  .stat-number {
-    font-weight: 800;
-  }
 }
 
 /* 减少动画支持 */

@@ -12,7 +12,6 @@ export const getMusicDetail = (id) => apiClient.get(`/music/detail/${id}`)
 export const playMusic = (id) => apiClient.get(`/music/play/${id}`)
 export const getLyrics = (id) => apiClient.get(`/music/lyrics/${id}`)
 export const getCover = (id) => apiClient.get(`/music/cover/${id}`)
-
 // 音乐反馈
 export const likeMusic = (id) => apiClient.get(`/music/like/${id}`)
 export const dislikeMusic = (id) => apiClient.get(`/music/dislike/${id}`)

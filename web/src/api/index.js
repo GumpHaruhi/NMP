@@ -19,7 +19,10 @@ export const {
     searchByLabels,
     likeMusic,
     dislikeMusic,
-    starMusic
+    starMusic,
+    getLyrics,      // ✅ 添加缺失的导出
+    getCover        // ✅ 添加缺失的导出
+
 } = api
 
 // 工具函数
@@ -29,6 +32,7 @@ export const switchApiMode = (mode) => {
         window.location.reload()
     }
 }
+
 
 export const getCurrentApiMode = () => {
     return isMockMode ? 'mock' : 'real'

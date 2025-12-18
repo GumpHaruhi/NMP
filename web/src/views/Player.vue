@@ -1,6 +1,5 @@
 <template>
-  <div class="player-page" :class = "{'has-song' : currentSong}">
-
+  <div class="player-page" :class="{ 'has-song': currentSong, 'visible': isPlayerVisible }">
     <!-- 背景模糊层 -->
     <div class="player-background" :style="backgroundStyle"></div>
 
@@ -13,13 +12,10 @@
     <div class="player-main-content">
       <!-- 圆形转盘区域 -->
       <div class="turntable-section">
-
         <div class="turntable-container">
           <!-- 转盘背景（渐变层） -->
           <div class="turntable-bg" :class="{ rotating: isPlaying }">
-            <!-- 渐变背景 -->
             <div class="gradient-layer"></div>
-            <!-- 唱片纹理 -->
             <div class="record-texture"></div>
           </div>
 
@@ -62,15 +58,15 @@
       </div>
 
       <!-- 歌词显示区域 -->
-      <div class="lyrics-section" v-if="showLyrics && lyrics.length > 0">
+      <div class="lyrics-section" v-if="showLyrics && currentLyricIndex.length > 0">
         <div class="lyrics-container" ref="lyricsContainer">
           <div
-              v-for="(line, index) in lyrics"
-              :key="index"
+              v-for="(line, index) in currentLyrics"
+              :key="index.id"
               class="lyric-line"
               :class="{
-              active: currentLyricIndex === index,
-              passed: index < currentLyricIndex
+                active: index === currentLyricIndex,
+                passed: index < currentLyricIndex
             }"
           >
             {{ line.text }}
@@ -82,14 +78,6 @@
         <p>暂无歌词</p>
       </div>
 
-      <!-- 进度条 -->
-      <div class="progress-section" v-if="currentSong">
-        <div class="progress-bar" @click="handleProgressClick" ref="progressBar">
-          <div class="progress-track"></div>
-          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
-          <div class="progress-thumb" :style="{ left: progress + '%' }"></div>
-        </div>
-      </div>
 
       <!-- 附加控制 -->
       <div class="additional-controls">
@@ -102,6 +90,14 @@
         <button class="playlist-btn" @click="showPlaylist = true" title="播放列表">
           播放列表 ({{ playQueue.length }})
         </button>
+
+        <!-- 音频状态指示器 -->
+        <div class="audio-status" :class="audioHealthStatus">
+          <span v-if="audioError">❌ 播放错误</span>
+          <span v-else-if="isWaiting">⏳ 加载中</span>
+          <span v-else-if="audioHealthStatus === 'healthy'">✅ 正常</span>
+          <span v-else>🔍 准备中</span>
+        </div>
       </div>
     </div>
 
@@ -127,7 +123,7 @@
         <!-- 中间：播放控制 -->
         <div class="center-controls">
           <!-- 上一首 -->
-          <button class="control-btn prev-btn" @click="handlePrevSong" :disabled="!currentSong" title="上一首">
+          <button class="control-btn prev-btn" @click="handlePrevSong" :disabled="!currentSong || !hasPrevious" title="上一首">
             <PrevIcon class="control-icon" />
           </button>
 
@@ -138,7 +134,7 @@
           </button>
 
           <!-- 下一首 -->
-          <button class="control-btn next-btn" @click="handleNextSong" :disabled="!currentSong" title="下一首">
+          <button class="control-btn next-btn" @click="handleNextSong" :disabled="!currentSong || !hasNext" title="下一首">
             <NextIcon class="control-icon" />
           </button>
         </div>
@@ -169,6 +165,11 @@
               <div class="volume-thumb" :style="{ left: volume + '%' }"></div>
             </div>
           </div>
+
+          <!-- 重试按钮（仅在错误时显示） -->
+          <button v-if="audioError" class="control-btn retry-btn" @click="handleRetry" title="重试播放">
+            <RetryIcon class="control-icon" />
+          </button>
         </div>
       </div>
     </div>
@@ -189,7 +190,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMusicStore } from '@/stores/musicStore'
-import { parseLRC } from '@/utils/lrcParser'
+import { storeToRefs } from 'pinia'
 
 // 图标组件
 import ArrowLeftIcon from '@/assets/icons/ArrowLeftIcon.vue'
@@ -205,29 +206,27 @@ import HeartIcon from '@/assets/icons/HeartIcon.vue'
 import VolumeUpIcon from '@/assets/icons/VolumeUpIcon.vue'
 import VolumeOffIcon from '@/assets/icons/VolumeOffIcon.vue'
 import LyricsIcon from '@/assets/icons/LyricsIcon.vue'
-import PlaylistIcon from '@/assets/icons/PlaylistIcon.vue'
+import RetryIcon from '@/assets/icons/RetryIcon.vue'
 
 // 组件
 import PlaylistModal from '@/components/PlaylistModal.vue'
-import { storeToRefs } from 'pinia'
 
 const route = useRoute()
 const router = useRouter()
 const musicStore = useMusicStore()
 
 // 响应式数据
+const isPlayerVisible = ref(false)
 const showLyrics = ref(true)
 const showPlaylist = ref(false)
 const isMuted = ref(false)
-const lyrics = ref([])
-const currentLyricIndex = ref(-1)
 const lyricsContainer = ref(null)
 const progressBar = ref(null)
 const volumeSlider = ref(null)
 const bottomProgressBar = ref(null)
+const isSeeking = ref(false)
 
-// 从store获取状态和方法
-// 使用 storeToRefs 保持响应式
+// 从store获取状态
 const {
   currentSong,
   isPlaying,
@@ -237,23 +236,14 @@ const {
   playQueue,
   currentIndex,
   playMode,
-  progress,
-  isLiked
+  likedSongs,
+  starredSongs,
+  currentLyrics,
+  currentLyricIndex,
+  audioError,
+  isWaiting,
+  audioHealth
 } = storeToRefs(musicStore)
-
-// 方法不需要响应式，可以直接解构
-const {
-  playSong,
-  togglePlay,
-  prevSong,
-  nextSong,
-  setCurrentTime,
-  setVolume,
-  setPlayMode,
-  likeSong,
-  dislikeSong,
-  removeFromQueue
-} = musicStore
 
 // 计算属性
 const coverStyle = computed(() => {
@@ -275,6 +265,14 @@ const backgroundStyle = computed(() => {
   }
 })
 
+const progress = computed(() => {
+  return duration.value > 0 ? (currentTime.value / duration.value) * 100 : 0
+})
+
+const isLiked = computed(() => {
+  return currentSong.value ? musicStore.isLiked(currentSong.value.id) : false
+})
+
 const playModeText = computed(() => {
   switch (playMode.value) {
     case 'loop': return '循环播放'
@@ -283,33 +281,74 @@ const playModeText = computed(() => {
   }
 })
 
+const hasPrevious = computed(() => {
+  return playQueue.value.length > 1 || musicStore.allMusics.length > 1
+})
+
+const hasNext = computed(() => {
+  return playQueue.value.length > 1 || musicStore.allMusics.length > 1
+})
+
+const audioHealthStatus = computed(() => {
+  if (audioError.value) return 'error'
+  if (isWaiting.value) return 'loading'
+  if (audioHealth.value === 'ready') return 'healthy'
+  return 'idle'
+})
+
 // 方法
 const goBack = () => {
   router.back()
 }
 
-const handleTogglePlay = () => {
-  if (!currentSong.value) return
-  togglePlay()
+const handleTogglePlay = async () => {
+  if (!currentSong.value) {
+    if (playQueue.value.length > 0) {
+      await handlePlaySong(playQueue.value[0])
+    }
+    return
+  }
+
+  try {
+    await musicStore.togglePlay()
+  } catch (error) {
+    console.error('播放控制失败:', error)
+  }
 }
 
-const handlePrevSong = () => {
-  if (!currentSong.value) return
-  prevSong()
+const handlePrevSong = async () => {
+  if (!currentSong.value || !hasPrevious.value) return
+  try {
+    await musicStore.prevSong()
+  } catch (error) {
+    console.error('上一首失败:', error)
+  }
 }
 
-const handleNextSong = () => {
-  if (!currentSong.value) return
-  nextSong()
+const handleNextSong = async () => {
+  if (!currentSong.value || !hasNext.value) return
+  try {
+    await musicStore.nextSong()
+  } catch (error) {
+    console.error('下一首失败:', error)
+  }
+}
+
+const handlePlaySong = async (song, playlist = null) => {
+  if (!song) return
+  try {
+    await musicStore.playSong(song, playlist)
+  } catch (error) {
+    console.error('播放歌曲失败:', error)
+  }
 }
 
 const handleToggleLike = () => {
   if (!currentSong.value) return
-
   if (isLiked.value) {
-    dislikeSong(currentSong.value.id)
+    musicStore.dislikeSong(currentSong.value.id)
   } else {
-    likeSong(currentSong.value.id)
+    musicStore.likeSong(currentSong.value.id)
   }
 }
 
@@ -317,24 +356,27 @@ const togglePlayMode = () => {
   const modes = ['sequential', 'loop', 'random']
   const currentModeIndex = modes.indexOf(playMode.value)
   const nextMode = modes[(currentModeIndex + 1) % modes.length]
-  setPlayMode(nextMode)
+  musicStore.setPlayMode(nextMode)
 }
 
 const toggleMute = () => {
   isMuted.value = !isMuted.value
-  setVolume(isMuted.value ? 0 : volume.value || 50)
+  musicStore.setVolume(isMuted.value ? 0 : volume.value || 50)
 }
 
 const handleProgressClick = (event) => {
   if (!currentSong.value || !progressBar.value) return
-
   try {
     const rect = progressBar.value.getBoundingClientRect()
     const clickX = event.clientX - rect.left
     const width = rect.width
     const percentage = (clickX / width) * 100
     const newTime = (percentage / 100) * duration.value
-    setCurrentTime(Math.max(0, Math.min(duration.value, newTime)))
+    isSeeking.value = true
+    musicStore.seekTo(newTime)
+    setTimeout(() => {
+      isSeeking.value = false
+    }, 100)
   } catch (error) {
     console.error('进度条点击失败:', error)
   }
@@ -342,12 +384,11 @@ const handleProgressClick = (event) => {
 
 const handleVolumeClick = (event) => {
   if (!volumeSlider.value) return
-
   const rect = volumeSlider.value.getBoundingClientRect()
   const clickX = event.clientX - rect.left
   const width = rect.width
   const newVolume = (clickX / width) * 100
-  setVolume(Math.max(0, Math.min(100, newVolume)))
+  musicStore.setVolume(Math.max(0, Math.min(100, newVolume)))
   isMuted.value = newVolume === 0
 }
 
@@ -363,157 +404,305 @@ const toggleLyricsDisplay = () => {
 }
 
 const handlePlaySongFromList = (song, index) => {
-  playSong(song, playQueue.value)
+  handlePlaySong(song, playQueue.value)
 }
 
 const handleRemoveFromQueue = (index) => {
-  removeFromQueue(index)
+  musicStore.removeFromQueue(index)
 }
 
-// 歌词功能
-const loadLyrics = async () => {
-  if (!currentSong.value?.lyricsUrl) {
-    lyrics.value = []
-    return
-  }
-
+const handleRetry = async () => {
   try {
-    const response = await fetch(currentSong.value.lyricsUrl)
-    const lrcText = await response.text()
-    lyrics.value = parseLRC(lrcText)
-    currentLyricIndex.value = -1
+    await musicStore.retryPlay()
   } catch (error) {
-    console.error('歌词加载失败:', error)
-    lyrics.value = []
+    console.error('重试播放失败:', error)
   }
 }
 
+// 改进的歌词更新方法
 const updateCurrentLyric = () => {
-  if (lyrics.value.length === 0) {
+  if (!storeCurrentLyrics.value || storeCurrentLyrics.value.length === 0) {
     currentLyricIndex.value = -1
     return
   }
 
-  for (let i = lyrics.value.length - 1; i >= 0; i--) {
-    if (currentTime.value >= lyrics.value[i].time) {
-      currentLyricIndex.value = i
+  if (isSeeking.value) return
+
+  const current = currentTime.value
+
+  // 从后往前查找当前应该显示的歌词
+  for (let i = storeCurrentLyrics.value.length - 1; i >= 0; i--) {
+    if (current >= storeCurrentLyrics.value[i].time) {
+      if (currentLyricIndex.value !== i) {
+        currentLyricIndex.value = i
+        scrollToCurrentLyric()
+      }
       break
+    }
+
+    // 如果当前时间小于第一句歌词的时间
+    if (i === 0 && current < storeCurrentLyrics.value[0].time) {
+      currentLyricIndex.value = -1
     }
   }
 }
 
+// 确保歌词容器正确滚动
 const scrollToCurrentLyric = async () => {
   if (!lyricsContainer.value || currentLyricIndex.value === -1) return
 
   await nextTick()
 
   const container = lyricsContainer.value
-  const activeLine = container.querySelector('.lyric-line.active')
+  const activeLines = container.querySelectorAll('.lyric-line.active')
 
-  if (activeLine) {
+  if (activeLines.length>0) {
+    const activeLine = activeLines[0]
     const containerHeight = container.clientHeight
     const lineHeight = activeLine.offsetHeight
     const lineTop = activeLine.offsetTop
-
     const scrollTo = lineTop - (containerHeight - lineHeight) / 2
 
     container.scrollTo({
-      top: scrollTo,
+      top: Math.max(0, scrollTo),
       behavior: 'smooth'
     })
   }
 }
 
-// 键盘快捷键
-const handleKeyPress = (event) => {
-  switch (event.code) {
-    case 'Space':
-      event.preventDefault()
-      handleTogglePlay()
-      break
-    case 'ArrowLeft':
-      event.preventDefault()
-      setCurrentTime(Math.max(0, currentTime.value - 10))
-      break
-    case 'ArrowRight':
-      event.preventDefault()
-      setCurrentTime(Math.min(duration.value, currentTime.value + 10))
-      break
-    case 'ArrowUp':
-      event.preventDefault()
-      setVolume(Math.min(100, volume.value + 10))
-      isMuted.value = false
-      break
-    case 'ArrowDown':
-      event.preventDefault()
-      setVolume(Math.max(0, volume.value - 10))
-      if (volume.value <= 0) isMuted.value = true
-      break
-    case 'Escape':
-      goBack()
-      break
-    case 'KeyL':
-      event.preventDefault()
-      toggleLyricsDisplay()
-      break
-    case 'KeyP':
-      event.preventDefault()
-      showPlaylist.value = !showPlaylist.value
-      break
-  }
-}
-
-// 增强监听器 - 添加更多状态的监听
-watch(currentSong, async (newSong, oldSong) => {
+// 监听器
+watch(currentSong, (newSong, oldSong) => {
   console.log('歌曲切换:', oldSong?.title, '->', newSong?.title)
-
   if (newSong && newSong !== oldSong) {
-    await loadLyrics()
-    // 强制更新视图
-    await nextTick()
-    updateDisplay()
+    isPlayerVisible.value = true
+    // 重置歌词滚动位置
+    if (lyricsContainer.value) {
+      lyricsContainer.value.scrollTop = 0
+    }
   } else if (!newSong) {
-    lyrics.value = []
+    isPlayerVisible.value = false
   }
 })
 
-// 监听播放索引变化
-watch(currentIndex, (newIndex, oldIndex) => {
-  if (newIndex !== oldIndex && newIndex >= 0 && playQueue.value[newIndex]) {
-    console.log('播放索引变化:', oldIndex, '->', newIndex)
-
-    updateDisplay()
+watch(currentTime, () => {
+  if (!isSeeking.value) {
+    updateCurrentLyric()
   }
-},{ deep: true })
+})
 
-// 监听播放队列变化
-watch(playQueue, (newQueue, oldQueue) => {
-  console.log('播放队列更新，长度:', newQueue.length)
-}, { deep: true })
-
-// 新增显示更新方法
-const updateDisplay = () => {
-  // 强制更新相关计算属性
-  coverStyle.value = { ...coverStyle.value }
-  backgroundStyle.value = { ...backgroundStyle.value }
-}
+// 监听歌词数据变化，重置滚动位置
+watch(currentLyrics, (newLyrics) => {
+  if (newLyrics.length > 0 && lyricsContainer.value) {
+    lyricsContainer.value.scrollTop = 0
+  }
+})
 
 // 生命周期
 onMounted(() => {
-  document.addEventListener('keydown', handleKeyPress)
-
-  // 初始化store数据
-  if (musicStore.allMusics.length === 0) {
-    musicStore.initialize()
-  }
+  isPlayerVisible.value = !!currentSong.value
 })
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeyPress)
 })
 </script>
 
 <style scoped>
+/* 样式部分保持不变，与您提供的样式一致 */
+.player-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--text-primary);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.player-page.visible {
+  transform: translateY(0);
+}
+
+.player-background {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px) brightness(0.6);
+  transform: scale(1.1);
+  z-index: 1;
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: var(--secondary-color);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.back-btn:hover {
+  background: var(--bg-hover);
+  transform: scale(1.1);
+}
+
+.back-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-primary);
+}
+
+.player-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 100px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* 原有样式保持不变，只添加新增元素的样式 */
+
+/* 音频状态指示器 */
+.audio-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: var(--bg-blur);
+}
+
+.audio-status.error {
+  background: rgba(231, 76, 60, 0.3);
+  color: #e74c3c;
+}
+
+.audio-status.loading {
+  background: rgba(241, 196, 15, 0.3);
+  color: #f1c40f;
+}
+
+.audio-status.healthy {
+  background: rgba(46, 204, 113, 0.3);
+  color: #2ecc71;
+}
+
+/* 重试按钮样式 */
+.retry-btn {
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.retry-btn:hover {
+  background: rgba(231, 76, 60, 0.2);
+}
+
+/* 其他原有样式保持不变 */
+.player-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--text-primary);
+}
+
+.player-background {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background-size: cover;
+  background-position: center;
+  filter: var(--bg-blur) brightness(0.6);
+  transform: scale(1.1);
+  z-index: 1;
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: var(--secondary-color);
+  border: none;
+  border-radius: var(--radius-circle);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all var(--transition-normal) var(--ease-out);
+  backdrop-filter: var(--bg-blur);
+}
+
+.back-btn:hover {
+  background: var(--bg-hover);
+  transform: scale(1.1);
+}
+
+/* ... 其余原有样式保持不变 ... */
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .turntable-container {
+    width: 280px;
+    height: 280px;
+  }
+
+  .turntable-disc {
+    width: 240px;
+    height: 240px;
+  }
+
+  .album-cover {
+    width: 150px;
+    height: 150px;
+  }
+
+  .song-title {
+    font-size: 24px;
+  }
+
+  /* 移动端隐藏部分控制元素 */
+  .additional-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .audio-status {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+}
 /* 播放器主容器 */
 .player-page {
   position: fixed;
@@ -1296,29 +1485,30 @@ onUnmounted(() => {
   transform: translate(-50%, -50%) scale(1.2);
 }
 
-/* 响应式调整 */
 @media (max-width: 768px) {
   .turntable-container {
     width: 280px;
     height: 280px;
   }
-
   .turntable-disc {
     width: 240px;
     height: 240px;
   }
-
   .album-cover {
     width: 150px;
     height: 150px;
   }
-
-  .soulform-text {
-    font-size: 20px;
-  }
-
   .song-title {
     font-size: 24px;
+  }
+  .additional-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .audio-status {
+    order: -1;
+    width: 100%;
+    text-align: center;
   }
 }
 </style>
