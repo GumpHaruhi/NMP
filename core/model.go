@@ -25,19 +25,33 @@ import (
 type Label string
 
 const (
-	LabelPop       Label = "Pop"
-	LabelRock      Label = "Rock"
-	LabelJazz      Label = "Jazz"
-	LabelClassical Label = "Classical"
-	LabelHipHop    Label = "HipHop"
+	LabelPop  Label = "Pop" 	// 流行
+	LabelRock      	Label = "Rock"	// 摇滚
+	LabelFolk      	Label = "Folk"	// 民谣
+	LabelElectronic Label = "Electronic"	// 电子
+	LabelBlue    	Label = "Blue"		// 蓝调
+	LabelAnime 		Label = "Anime"		// 二次元
+	LabelClassical 	Label = "Classical"	// 古典
+	LabelHipHop 		Label = "HipHop"	// HipHop
+	LabelJazz 			Label = "Jazz"		// 爵士
+	LabelInstrumental 	Label = "Instrumental" 	// 纯音乐
+	LabelStudying Label = "Studying"	// 学习/工作
+	LabelFitness Label = "Fitness"		// 锻炼/健身
+	LabelSleepAid Label = "SleepAid"	// 助眠
+	LabelRelax Label = "Relax"	// 放松
+	LabelParty Label = "Party"		// 派对聚会
+	LabelTravel Label = "Ttravel"			// 旅行
+	LabelDriving Label = "Driving"	// 驾驶通勤
+	LabelWakeUp Label = "WakeUp"	// 早晨起床
+	LabelFeelDown Label = "FeelDown"	// 沮丧
+	LabelRelease Label = "Release"	// 情绪宣泄
 )
 
 var AllLabels = []Label{
-	LabelPop,
-	LabelRock,
-	LabelJazz,
-	LabelClassical,
-	LabelHipHop,
+	LabelPop, LabelRock, LabelFolk, LabelElectronic, LabelBlue,
+	LabelAnime, LabelClassical, LabelHipHop, LabelJazz, LabelInstrumental,
+	LabelStudying, LabelFitness, LabelSleepAid, LabelRelax, LabelParty,
+	LabelTravel, LabelDriving, LabelWakeUp, LabelFeelDown, LabelRelease,
 }
 
 // 音乐

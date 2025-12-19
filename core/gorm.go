@@ -69,7 +69,7 @@ func InitDB() error {
 	// 填充数据
 	seedData(DB)
 
-	log.Println("GORM database initialized and migrated.")
+	log.Println("数据库初始化完成，已解析资源")
 	return nil
 }
 
@@ -101,13 +101,9 @@ func seedData(db *gorm.DB) {
 
 	var s seedFile
 
-	content, err := os.ReadFile("music/seed.json")
+	content, err := os.ReadFile("./seed.json")
 	if err != nil {
-		content, err = os.ReadFile("/music/seed.json")
-	}
-
-	if err != nil {
-		log.Printf("failed to read seed.json: %v; skipping seeding", err)
+		log.Printf("读取资源索引文件失败: %v; skipping seeding", err)
 		return
 	}
 

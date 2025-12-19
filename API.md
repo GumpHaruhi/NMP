@@ -16,11 +16,26 @@
 
 | 枚举值    | 说明     |
 | --------- | -------- |
-| Pop       | 流行音乐 |
-| Rock      | 摇滚音乐 |
-| Jazz      | 爵士音乐 |
-| Classical | 古典音乐 |
-| HipHop    | 嘻哈音乐 |
+| Pop 	    | 流行      |
+| Rock      | 摇滚      |
+| Folk      | 民谣      | 
+| Electronic| 电子      |
+| Blue		  | 蓝调      |
+| Anime     | 二次元    |
+| Classical | 古典      |
+| HipHop    | HipHop    |
+| Jazz      | 爵士      |
+| Instrumental | 纯音乐 |
+| Studying  | 学习/工作 |
+| Fitness   | 锻炼/健身 |
+| SleepAid  | 助眠      |
+| Relax     | 放松      |
+| Party     | 派对聚会  |
+| Ttravel   | 旅行      |
+| Driving   | 驾驶通勤  |
+| WakeUp    | 早晨起床  |
+| FeelDown  | 沮丧      |
+| Release   | 情绪宣泄  |
 
 ### 2. Music（音乐）
 
