@@ -7,11 +7,8 @@ WORKDIR /app
 RUN npm config set registry https://registry.npmmirror.com
 
 # 复制前端文件
-COPY web/package*.json ./
-RUN npm ci
-
-# 复制前端源代码
 COPY web/ .
+RUN npm ci
 
 # 构建前端
 RUN npm run build
@@ -41,6 +38,8 @@ RUN mkdir -p /music && chmod 777 /music
 # 复制构建好的文件
 COPY --from=frontend-builder /app/dist ./web/dist
 COPY --from=backend-builder /NMP /NMP
+# 复制 seed.json 文件到工作目录
+COPY seed.json ./seed.json
 
 EXPOSE 8080
 

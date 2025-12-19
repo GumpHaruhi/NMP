@@ -1,0 +1,76 @@
+{
+    "music": [
+        {
+            "title": "晴天",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Rock"
+            ],
+            "audioUrl": "qingtian.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "qingtian.lrc"
+        },
+        {
+            "title": "嘉宾",
+            "singer": "张远",
+            "labels": [
+                "Pop"
+            ],
+            "audioUrl": "guest.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "guest.lrc"
+        },
+        {
+            "title": "可惜没如果",
+            "singer": "林俊杰",
+            "labels": [
+                "HipHop"
+            ],
+            "audioUrl": "noifs.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "noifs.lrc"
+        },
+        {
+            "title": "不是因为寂寞才想你",
+            "singer": "T.R.Y.",
+            "labels": [
+                "HipHop",
+                "Jazz"
+            ],
+            "audioUrl": "TRY.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "TRY.lrc"
+        }
+    ],
+    "playlists": [
+        {
+            "name": "我的收藏",
+            "description": "admin 的收藏",
+            "items": [
+                {
+                    "musicAudioUrl": "qingtian.mp3",
+                    "trackOrder": 1
+                },
+                {
+                    "musicAudioUrl": "noifs.mp3",
+                    "trackOrder": 2
+                },
+                {
+                    "musicAudioUrl": "TRY.mp3",
+                    "trackOrder": 3
+                }
+            ]
+        },
+        {
+            "name": "流行金曲",
+            "description": "访客歌单",
+            "items": [
+                {
+                    "musicAudioUrl": "guest.mp3",
+                    "trackOrder": 1
+                }
+            ]
+        }
+    ]
+}
