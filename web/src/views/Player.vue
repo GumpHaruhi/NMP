@@ -45,67 +45,26 @@
         </div>
       </div>
 
+
       <!-- 歌曲信息 -->
       <div class="song-info-section">
         <h1 class="song-title">{{ currentSong?.title || '选择一首歌曲' }}</h1>
         <p class="song-artist">{{ currentSong?.singer || '暂无播放' }}</p>
-
-        <!-- 时间显示 -->
-        <div class="time-display" v-if="currentSong">
-          <span class="current-time">{{ formatTime(currentTime) }}</span>
-          <span class="duration">{{ formatTime(duration) }}</span>
-        </div>
       </div>
 
-      <!-- 歌词显示区域 -->
-      <div class="lyrics-section" v-if="showLyrics && currentLyricIndex.length > 0">
-        <div class="lyrics-container" ref="lyricsContainer">
-          <div
-              v-for="(line, index) in currentLyrics"
-              :key="index.id"
-              class="lyric-line"
-              :class="{
-                active: index === currentLyricIndex,
-                passed: index < currentLyricIndex
-            }"
-          >
-            {{ line.text }}
+        <!-- 当前歌词显示 - 嵌入在转盘下方 -->
+        <div class="current-lyric-container" v-if="showLyrics && currentSong">
+          <div class="current-lyric" :class="{ 'has-lyrics': hasLyrics, 'no-lyrics': !hasLyrics }">
+            {{ currentLyricText }}
           </div>
         </div>
       </div>
-
-      <div v-else-if="showLyrics" class="no-lyrics">
-        <p>暂无歌词</p>
-      </div>
-
-
-      <!-- 附加控制 -->
-      <div class="additional-controls">
-        <!-- 歌词显示切换 -->
-        <button class="lyrics-toggle-btn" @click="toggleLyricsDisplay">
-          {{ showLyrics ? '隐藏歌词' : '显示歌词' }}
-        </button>
-
-        <!-- 播放列表按钮 -->
-        <button class="playlist-btn" @click="showPlaylist = true" title="播放列表">
-          播放列表 ({{ playQueue.length }})
-        </button>
-
-        <!-- 音频状态指示器 -->
-        <div class="audio-status" :class="audioHealthStatus">
-          <span v-if="audioError">❌ 播放错误</span>
-          <span v-else-if="isWaiting">⏳ 加载中</span>
-          <span v-else-if="audioHealthStatus === 'healthy'">✅ 正常</span>
-          <span v-else>🔍 准备中</span>
-        </div>
-      </div>
-    </div>
 
     <!-- 底部播放栏 -->
     <div class="player-bottom-bar" :class="{ 'visible': currentSong }">
       <!-- 进度条 -->
       <div class="bottom-progress-section">
-        <div class="progress-bar" @click="handleProgressClick" ref="bottomProgressBar">
+        <div class="progress-bar" @click="handleProgressClick" ref="progressBar">
           <div class="progress-track"></div>
           <div class="progress-fill" :style="{ width: progress + '%' }"></div>
           <div class="progress-thumb" :style="{ left: progress + '%' }"></div>
@@ -118,6 +77,13 @@
           <button class="action-btn like-btn" @click="handleToggleLike" :title="isLiked ? '取消喜欢' : '喜欢'">
             <HeartIcon class="action-icon" :class="{ liked: isLiked }" />
           </button>
+
+          <!-- 时间显示 - 移到左侧 -->
+          <div class="time-display" v-if="currentSong">
+            <span class="current-time">{{ formatTime(currentTime) }}</span>
+            /
+            <span class="duration">{{ formatTime(duration) }}</span>
+          </div>
         </div>
 
         <!-- 中间：播放控制 -->
@@ -150,7 +116,12 @@
 
           <!-- 歌词显示切换 -->
           <button class="control-btn lyrics-btn" @click="toggleLyricsDisplay" :title="showLyrics ? '隐藏歌词' : '显示歌词'">
-            <LyricsIcon class="control-icon" />
+            <LyricsIcon class="control-icon" :class="{ active: showLyrics }" />
+          </button>
+
+          <!-- 播放列表按钮 -->
+          <button class="control-btn playlist-btn" @click="showPlaylist = true" :title="`播放列表 (${playQueue.length})`">
+            <PlaylistIcon class="control-icon" />
           </button>
 
           <!-- 音量控制 -->
@@ -207,6 +178,7 @@ import VolumeUpIcon from '@/assets/icons/VolumeUpIcon.vue'
 import VolumeOffIcon from '@/assets/icons/VolumeOffIcon.vue'
 import LyricsIcon from '@/assets/icons/LyricsIcon.vue'
 import RetryIcon from '@/assets/icons/RetryIcon.vue'
+import PlaylistIcon from '@/assets/icons/PlaylistIcon.vue'
 
 // 组件
 import PlaylistModal from '@/components/PlaylistModal.vue'
@@ -220,10 +192,8 @@ const isPlayerVisible = ref(false)
 const showLyrics = ref(true)
 const showPlaylist = ref(false)
 const isMuted = ref(false)
-const lyricsContainer = ref(null)
 const progressBar = ref(null)
 const volumeSlider = ref(null)
-const bottomProgressBar = ref(null)
 const isSeeking = ref(false)
 
 // 从store获取状态
@@ -289,6 +259,25 @@ const hasNext = computed(() => {
   return playQueue.value.length > 1 || musicStore.allMusics.length > 1
 })
 
+// 当前歌词文本
+const currentLyricText = computed(() => {
+  if (!currentLyrics.value.length) return '🎵 暂无歌词'
+
+  if (currentLyricIndex.value >= 0 && currentLyricIndex.value < currentLyrics.value.length) {
+    return currentLyrics.value[currentLyricIndex.value].text
+  }
+
+  return currentLyrics.value[0]?.text || '🎵 暂无歌词'
+})
+
+// 是否有真实歌词（非占位符）
+const hasLyrics = computed(() => {
+  if (!currentLyrics.value.length) return false
+
+  const firstLyric = currentLyrics.value[0]
+  return !(firstLyric.id.includes('placeholder') || firstLyric.id.includes('no-lyrics'))
+})
+
 const audioHealthStatus = computed(() => {
   if (audioError.value) return 'error'
   if (isWaiting.value) return 'loading'
@@ -296,7 +285,7 @@ const audioHealthStatus = computed(() => {
   return 'idle'
 })
 
-// 方法
+
 const goBack = () => {
   router.back()
 }
@@ -370,10 +359,11 @@ const handleProgressClick = (event) => {
     const rect = progressBar.value.getBoundingClientRect()
     const clickX = event.clientX - rect.left
     const width = rect.width
-    const percentage = (clickX / width) * 100
+    const percentage = Math.max(0, Math.min(100, (clickX / width) * 100))
     const newTime = (percentage / 100) * duration.value
     isSeeking.value = true
     musicStore.seekTo(newTime)
+    currentTime.value = newTime
     setTimeout(() => {
       isSeeking.value = false
     }, 100)
@@ -419,81 +409,19 @@ const handleRetry = async () => {
   }
 }
 
-// 改进的歌词更新方法
-const updateCurrentLyric = () => {
-  if (!currentLyrics.value || currentLyrics.value.length === 0) {
-    currentLyricIndex.value = -1
-    return
-  }
-
-  if (isSeeking.value) return
-
-  const current = currentTime.value
-
-  // 从后往前查找当前应该显示的歌词
-  for (let i = crrentLyrics.value.length - 1; i >= 0; i--) {
-    if (current >= currentLyrics.value[i].time) {
-      if (currentLyricIndex.value !== i) {
-        currentLyricIndex.value = i
-        scrollToCurrentLyric()
-      }
-      break
-    }
-
-    // 如果当前时间小于第一句歌词的时间
-    if (i === 0 && current < currentLyrics.value[0].time) {
-      currentLyricIndex.value = -1
-    }
-  }
-}
-
-// 确保歌词容器正确滚动
-const scrollToCurrentLyric = async () => {
-  if (!lyricsContainer.value || currentLyricIndex.value === -1) return
-
-  await nextTick()
-
-  const container = lyricsContainer.value
-  const activeLines = container.querySelectorAll('.lyric-line.active')
-
-  if (activeLines.length>0) {
-    const activeLine = activeLines[0]
-    const containerHeight = container.clientHeight
-    const lineHeight = activeLine.offsetHeight
-    const lineTop = activeLine.offsetTop
-    const scrollTo = lineTop - (containerHeight - lineHeight) / 2
-
-    container.scrollTo({
-      top: Math.max(0, scrollTo),
-      behavior: 'smooth'
-    })
-  }
-}
-
 // 监听器
 watch(currentSong, (newSong, oldSong) => {
   console.log('歌曲切换:', oldSong?.title, '->', newSong?.title)
   if (newSong && newSong !== oldSong) {
     isPlayerVisible.value = true
-    // 重置歌词滚动位置
-    if (lyricsContainer.value) {
-      lyricsContainer.value.scrollTop = 0
-    }
   } else if (!newSong) {
     isPlayerVisible.value = false
   }
 })
 
-watch(currentTime, () => {
+watch(currentTime, (newTime) => {
   if (!isSeeking.value) {
-    updateCurrentLyric()
-  }
-})
-
-// 监听歌词数据变化，重置滚动位置
-watch(currentLyrics, (newLyrics) => {
-  if (newLyrics.length > 0 && lyricsContainer.value) {
-    lyricsContainer.value.scrollTop = 0
+    musicStore.updateCurrentLyricIndex(newTime)
   }
 })
 
@@ -503,11 +431,147 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // 清理资源
 })
 </script>
 
 <style scoped>
-/* 样式部分保持不变，与您提供的样式一致 */
+.current-lyric-container {
+  margin-top: 30px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 80%;
+  text-align: center;
+}
+
+.current-lyric {
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  text-shadow: var(--shadow-medium);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all var(--transition-normal) var(--ease-out);
+  padding: 12px 20px;
+  border-radius: var(--radius-large);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: var(--bg-blur);
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.current-lyric.has-lyrics {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.current-lyric.no-lyrics {
+  opacity: 0.7;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* 优化转盘区域间距 */
+.turntable-section {
+  margin-bottom: 20px;
+}
+
+/* 调整歌曲信息区域间距 */
+.song-info-section {
+  margin-bottom: 20px;
+}
+
+/* 移除原有的歌词区域样式 */
+.lyrics-section {
+  display: none;
+}
+
+.additional-controls {
+  display: none;
+}
+
+/* 底部播放栏样式调整 */
+.right-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* 歌词按钮激活状态 */
+.lyrics-btn.active .control-icon {
+  color: var(--primary-color);
+}
+
+/* 播放列表按钮样式 */
+.playlist-btn {
+  position: relative;
+}
+
+.playlist-btn::after {
+  content: attr(data-count);
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .current-lyric-container {
+    margin-top: 20px;
+    min-height: 50px;
+    max-width: 90%;
+  }
+
+  .current-lyric {
+    font-size: 16px;
+    padding: 8px 16px;
+  }
+
+  .right-controls {
+    gap: 6px;
+  }
+
+  .playlist-btn::after {
+    font-size: 9px;
+    padding: 1px 4px;
+    min-width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .current-lyric {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  /* 在小屏幕上隐藏一些控制按钮的文字提示 */
+  .control-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .control-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* 保留其他原有样式不变 */
 .player-page {
   position: fixed;
   top: 0;
@@ -582,200 +646,6 @@ onUnmounted(() => {
   text-align: center;
 }
 
-/* 原有样式保持不变，只添加新增元素的样式 */
-
-/* 音频状态指示器 */
-.audio-status {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: var(--bg-blur);
-}
-
-.audio-status.error {
-  background: rgba(231, 76, 60, 0.3);
-  color: #e74c3c;
-}
-
-.audio-status.loading {
-  background: rgba(241, 196, 15, 0.3);
-  color: #f1c40f;
-}
-
-.audio-status.healthy {
-  background: rgba(46, 204, 113, 0.3);
-  color: #2ecc71;
-}
-
-/* 重试按钮样式 */
-.retry-btn {
-  background: rgba(231, 76, 60, 0.1);
-}
-
-.retry-btn:hover {
-  background: rgba(231, 76, 60, 0.2);
-}
-
-/* 其他原有样式保持不变 */
-.player-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-primary);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  color: var(--text-primary);
-}
-
-.player-background {
-  position: absolute;
-  top: -20px;
-  left: -20px;
-  right: -20px;
-  bottom: -20px;
-  background-size: cover;
-  background-position: center;
-  filter: var(--bg-blur) brightness(0.6);
-  transform: scale(1.1);
-  z-index: 1;
-}
-
-.back-btn {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: var(--secondary-color);
-  border: none;
-  border-radius: var(--radius-circle);
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all var(--transition-normal) var(--ease-out);
-  backdrop-filter: var(--bg-blur);
-}
-
-.back-btn:hover {
-  background: var(--bg-hover);
-  transform: scale(1.1);
-}
-
-/* ... 其余原有样式保持不变 ... */
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .turntable-container {
-    width: 280px;
-    height: 280px;
-  }
-
-  .turntable-disc {
-    width: 240px;
-    height: 240px;
-  }
-
-  .album-cover {
-    width: 150px;
-    height: 150px;
-  }
-
-  .song-title {
-    font-size: 24px;
-  }
-
-  /* 移动端隐藏部分控制元素 */
-  .additional-controls {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .audio-status {
-    order: -1;
-    width: 100%;
-    text-align: center;
-  }
-}
-/* 播放器主容器 */
-.player-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-primary);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  color: var(--text-primary);
-}
-
-/* 背景模糊层 */
-.player-background {
-  position: absolute;
-  top: -20px;
-  left: -20px;
-  right: -20px;
-  bottom: -20px;
-  background-size: cover;
-  background-position: center;
-  filter: var(--bg-blur) brightness(0.6);
-  transform: scale(1.1);
-  z-index: 1;
-}
-
-/* 返回按钮 */
-.back-btn {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: var(--secondary-color);
-  border: none;
-  border-radius: var(--radius-circle);
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all var(--transition-normal) var(--ease-out);
-  backdrop-filter: var(--bg-blur);
-}
-
-.back-btn:hover {
-  background: var(--bg-hover);
-  transform: scale(1.1);
-}
-
-.back-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--text-primary);
-}
-
-/* 主内容区域 */
-.player-main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px 100px;
-  position: relative;
-  z-index: 2;
-  text-align: center;
-}
-
-/* 转盘区域样式 */
 .turntable-section {
   position: relative;
   display: flex;
@@ -1003,6 +873,7 @@ onUnmounted(() => {
 
 /* 歌曲信息区域 */
 .song-info-section {
+  text-align: center;
   margin-bottom: 40px;
   max-width: 500px;
 }
@@ -1023,148 +894,55 @@ onUnmounted(() => {
   margin: 0;
 }
 
-/* 时间显示 */
+/* 歌词容器 - 居中显示 */
+.current-lyric-container {
+  margin-top: 0; /* 移除之前的顶部间距 */
+  margin-bottom: 20px; /* 增加歌词与底部播放栏的间距 */
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 80%;
+  text-align: center;
+}
+
+.current-lyric {
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  text-shadow: var(--shadow-medium);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all var(--transition-normal) var(--ease-out);
+  padding: 12px 20px;
+  border-radius: var(--radius-large);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: var(--bg-blur);
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.current-lyric.has-lyrics {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.current-lyric.no-lyrics {
+  opacity: 0.7;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+
+/* 时间显示样式调整 */
 .time-display {
   display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
+  gap: 4px;
   font-size: 14px;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
-/* 歌词区域 */
-.lyrics-section {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 40px;
-  max-height: 200px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  background: var(--background-card);
-  backdrop-filter: var(--bg-blur);
-  border-radius: var(--radius-large);
-  padding: 20px;
-  border: 1px solid var(--border-light);
-}
-
-.lyrics-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 0;
-}
-
-.lyric-line {
-  font-size: 18px;
-  line-height: 1.5;
-  opacity: 0.6;
-  transition: all var(--transition-normal) var(--ease-out);
-  text-align: center;
-  padding: 8px 16px;
-  border-radius: var(--radius-medium);
-  color: var(--text-muted);
-  margin: 4px 0;
-}
-
-.lyric-line.active {
-  font-size: 22px;
-  font-weight: 600;
-  opacity: 1;
-  background: var(--bg-hover);
-  backdrop-filter: var(--bg-blur);
-  transform: scale(1.02);
-  color: var(--text-primary);
-}
-
-.lyric-line.passed {
-  opacity: 0.8;
-  color: var(--text-secondary);
-}
-
-.no-lyrics {
-  padding: 20px;
-  text-align: center;
-  color: var(--text-muted);
-  opacity: 0.7;
-}
-
-/* 进度条区域 */
-.progress-section {
-  width: 100%;
-  max-width: 500px;
-  margin-bottom: 40px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: var(--bg-hover);
-  border-radius: var(--radius-circle);
-  cursor: pointer;
-  position: relative;
-  margin-bottom: 8px;
-  transition: height var(--transition-fast);
-}
-
-.progress-bar:hover {
-  height: 6px;
-}
-
-.progress-track {
-  width: 100%;
-  height: 100%;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-  border-radius: var(--radius-circle);
-  transition: width 0.1s ease;
-  position: relative;
-}
-
-.progress-thumb {
-  width: 12px;
-  height: 12px;
-  background: var(--accent-color);
-  border-radius: var(--radius-circle);
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  transition: opacity var(--transition-normal) var(--ease-out);
-  box-shadow: var(--shadow-small);
-}
-
-.progress-bar:hover .progress-thumb {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.2);
-}
-
-/* 附加控制按钮 */
-.additional-controls {
-  display: flex;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.lyrics-toggle-btn, .playlist-btn {
-  background: var(--background-card);
-  border: none;
-  border-radius: var(--radius-large);
-  padding: 8px 16px;
-  color: var(--text-primary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all var(--transition-normal) var(--ease-out);
-  backdrop-filter: var(--bg-blur);
-}
-
-.lyrics-toggle-btn:hover, .playlist-btn:hover {
-  background: var(--bg-hover);
-  transform: scale(1.05);
-}
 
 /* 底部播放栏 */
 .player-bottom-bar {
@@ -1227,7 +1005,7 @@ onUnmounted(() => {
   transform: translate(-50%, -50%) scale(1.2);
 }
 
-/* 播放控制区域 - 关键修改部分 */
+/* 播放控制区域 */
 .player-content {
   display: flex;
   align-items: center;
@@ -1237,15 +1015,13 @@ onUnmounted(() => {
   flex: 1;
 }
 
-/* 左侧：歌曲信息和喜欢按钮 */
 .left-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px; /* 增加喜欢按钮和时间显示之间的间距 */
   flex: 1;
   min-width: 0;
 }
-
 /* 中间：播放控制按钮居中 */
 .center-controls {
   display: flex;
@@ -1485,30 +1261,159 @@ onUnmounted(() => {
   transform: translate(-50%, -50%) scale(1.2);
 }
 
+/* 响应式调整 */
 @media (max-width: 768px) {
   .turntable-container {
     width: 280px;
     height: 280px;
   }
+
   .turntable-disc {
     width: 240px;
     height: 240px;
   }
+
   .album-cover {
     width: 150px;
     height: 150px;
   }
+
   .song-title {
     font-size: 24px;
   }
-  .additional-controls {
-    flex-wrap: wrap;
-    gap: 8px;
+
+  .player-content {
+    padding: 0 15px;
   }
-  .audio-status {
-    order: -1;
-    width: 100%;
-    text-align: center;
+
+  .center-controls {
+    gap: 12px;
   }
+
+  .control-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .play-pause-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .volume-slider {
+    width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .turntable-container {
+    width: 240px;
+    height: 240px;
+  }
+
+  .turntable-disc {
+    width: 200px;
+    height: 200px;
+  }
+
+  .album-cover {
+    width: 120px;
+    height: 120px;
+  }
+
+  .song-title {
+    font-size: 20px;
+  }
+
+  .song-artist {
+    font-size: 14px;
+  }
+
+  .player-main-content {
+    padding: 30px 15px 80px;
+  }
+
+  .right-controls {
+    gap: 4px;
+  }
+
+  .volume-control {
+    display: none; /* 在小屏幕上隐藏音量控制 */
+  }
+
+  .current-lyric {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+/* 动画优化 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.current-lyric {
+  animation: fadeInUp 0.5s var(--ease-out);
+}
+
+/* 加载状态优化 */
+.lyrics-loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.loading-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.loading-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* 错误状态样式 */
+.lyrics-error {
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* 歌词切换过渡效果 */
+.lyrics-transition-enter-active,
+.lyrics-transition-leave-active {
+  transition: all 0.3s var(--ease-out);
+}
+
+.lyrics-transition-enter-from,
+.lyrics-transition-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

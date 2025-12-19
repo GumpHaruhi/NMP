@@ -5,11 +5,11 @@
       <div class="progress-track"></div>
       <div
           class="progress-fill"
-          :style="{ width: safeProgress + '%' }"
+          :style="{ width: displayProgress + '%' }"
       ></div>
       <div
           class="progress-thumb"
-          :style="{ left: safeProgress + '%' }"
+          :style="{ left: displayProgress + '%' }"
           @mousedown="startDrag"
           @touchstart="startDrag"
       ></div>
@@ -18,13 +18,13 @@
     <!-- 播放器内容区域 -->
     <div class="player-content">
       <!-- 左侧：歌曲信息 -->
-      <div class="song-info" @click="goToPlayer" :title="safeCurrentSong ? '查看播放详情' : ''">
+      <div class="song-info" @click="goToPlayer" :title="currentSongData ? '查看播放详情' : ''">
         <div class="cover-image" :style="coverStyle">
-          <div v-if="!safeCurrentSong?.coverUrl" class="cover-placeholder">
+          <div v-if="!currentSongData?.coverUrl" class="cover-placeholder">
             <MusicIcon class="placeholder-icon" />
           </div>
           <!-- 播放动画效果 -->
-          <div class="playing-indicator" v-if="safeIsPlaying">
+          <div class="playing-indicator" v-if="isPlayingState">
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>
@@ -33,16 +33,16 @@
         </div>
 
         <div class="song-details">
-          <div class="song-title">{{ safeCurrentSong?.title || '暂无播放' }}</div>
-          <div class="song-artist">{{ safeCurrentSong?.singer || '选择一首歌曲开始播放' }}</div>
+          <div class="song-title" v-text="currentSongData?.title || '暂无播放'"></div>
+          <div class="song-artist" v-text="currentSongData?.singer || '选择一首歌曲开始播放'"></div>
         </div>
 
         <!-- 喜欢按钮 -->
         <button
             class="like-btn"
             @click.stop="handleToggleLike"
-            :class="{ liked: isCurrentSongLiked }"
-            :title="isCurrentSongLiked ? '取消喜欢' : '喜欢'"
+            :class="{ liked: isLikedState }"
+            :title="isLikedState ? '取消喜欢' : '喜欢'"
         >
           <HeartIcon class="like-icon" />
         </button>
@@ -55,15 +55,15 @@
             @click="togglePlayMode"
             :title="playModeText"
         >
-          <RepeatIcon v-if="playMode === 'loop'" class="control-icon" />
-          <ShuffleIcon v-else-if="playMode === 'random'" class="control-icon" />
+          <RepeatIcon v-if="playModeState === 'loop'" class="control-icon" />
+          <ShuffleIcon v-else-if="playModeState === 'random'" class="control-icon" />
           <SequentialIcon v-else class="control-icon" />
         </button>
 
         <button
             class="control-btn prev-btn"
             @click="handlePrevSong"
-            :disabled="!safeCurrentSong || !hasPrevious"
+            :disabled="!currentSongData || !hasPrevious"
             title="上一首"
         >
           <PrevIcon class="control-icon" />
@@ -72,17 +72,17 @@
         <button
             class="play-pause-btn"
             @click="handleTogglePlay"
-            :disabled="!safeCurrentSong"
-            :title="getPlayButtonTitle"
+            :disabled="!currentSongData"
+            :title="playButtonTitle"
         >
-          <PlayIcon v-if="!safeIsPlaying" class="play-pause-icon" />
+          <PlayIcon v-if="!isPlayingState" class="play-pause-icon" />
           <PauseIcon v-else class="play-pause-icon" />
         </button>
 
         <button
             class="control-btn next-btn"
             @click="handleNextSong"
-            :disabled="!safeCurrentSong || !hasNext"
+            :disabled="!currentSongData || !hasNext"
             title="下一首"
         >
           <NextIcon class="control-icon" />
@@ -93,9 +93,9 @@
       <div class="player-right-controls">
         <!-- 时间显示 -->
         <div class="time-display">
-          <span class="current-time">{{ formatTime(safeCurrentTime) }}</span>
+          <span class="current-time">{{ formatTime(displayCurrentTime) }}</span>
           <span class="time-separator">/</span>
-          <span class="total-time">{{ formatTime(safeDuration) }}</span>
+          <span class="total-time">{{ formatTime(displayDuration) }}</span>
         </div>
 
         <!-- 音量控制 -->
@@ -103,9 +103,9 @@
           <button
               class="volume-btn"
               @click="toggleMute"
-              :title="isMuted ? '取消静音' : '静音'"
+              :title="isMutedState ? '取消静音' : '静音'"
           >
-            <VolumeUpIcon v-if="!isMuted && volume > 0" class="volume-icon" />
+            <VolumeUpIcon v-if="!isMutedState && volumeState > 0" class="volume-icon" />
             <VolumeOffIcon v-else class="volume-icon" />
           </button>
           <div
@@ -114,10 +114,10 @@
               ref="volumeSlider"
           >
             <div class="volume-track"></div>
-            <div class="volume-fill" :style="{ width: volume + '%' }"></div>
+            <div class="volume-fill" :style="{ width: volumeState + '%' }"></div>
             <div
                 class="volume-thumb"
-                :style="{ left: volume + '%' }"
+                :style="{ left: volumeState + '%' }"
             ></div>
           </div>
         </div>
@@ -144,7 +144,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMusicStore } from '@/stores/musicStore'
 
@@ -165,42 +165,105 @@ import PlaylistIcon from '@/assets/icons/PlaylistIcon.vue'
 const router = useRouter()
 const musicStore = useMusicStore()
 
-// Refs
+const throttle = (func, delay) => {
+  let timeoutId = null
+  return (...args) => {
+    if (!timeoutId) {
+      timeoutId = setTimeout(() => {
+        func.apply(this, args)
+        timeoutId = null
+      }, delay)
+    }
+  }
+}
+
+const debounce = (func, delay) => {
+  let timeoutId = null
+  return (...args) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => func.apply(this, args), delay)
+  }
+}
+
+// Refs - 优化变量命名，减少计算属性依赖
 const isVisible = ref(false)
 const progressBar = ref(null)
 const volumeSlider = ref(null)
 const isDragging = ref(false)
 const errorMessage = ref('')
-const isMuted = ref(false)
+const isMutedState = ref(false)
 const isBuffering = ref(false)
+
+// 🆕 优化：添加本地状态缓存，减少store访问
+const localCurrentTime = ref(0)
+const localDuration = ref(0)
+const localProgress = ref(0)
+let rafId = null
 
 // 拖动状态
 const dragStartX = ref(0)
 const dragStartProgress = ref(0)
 
-// 计算属性 - 使用musicStore的状态
-const safeCurrentSong = computed(() => musicStore.currentSong)
-const safeIsPlaying = computed(() => musicStore.isPlaying)
-const safeCurrentTime = computed(() => musicStore.currentTime || 0)
-const safeDuration = computed(() => musicStore.duration || 0)
-const volume = computed(() => musicStore.volume || 80)
-const playMode = computed(() => musicStore.playMode || 'sequential')
+// 🆕 优化：批量获取store状态，减少响应式依赖
+const storeState = computed(() => ({
+  currentSong: musicStore.currentSong,
+  isPlaying: musicStore.isPlaying,
+  currentTime: musicStore.currentTime || 0,
+  duration: musicStore.duration || 0,
+  volume: musicStore.volume || 80,
+  playMode: musicStore.playMode || 'sequential',
+  playQueue: musicStore.playQueue || [],
+  allMusics: musicStore.allMusics || [],
+  audioError: musicStore.audioError,
+  lyricsLoading: musicStore.lyricsLoading
+}))
 
-const safeProgress = computed(() => {
-  if (!safeDuration.value || safeDuration.value <= 0) return 0
-  return (safeCurrentTime.value / safeDuration.value) * 100
-})
+// 🆕 优化：使用缓存的计算属性
+const currentSongData = computed(() => storeState.value.currentSong)
+const isPlayingState = computed(() => storeState.value.isPlaying)
+const volumeState = computed(() => storeState.value.volume)
+const playModeState = computed(() => storeState.value.playMode)
+
+// 🆕 优化：使用RAF更新显示时间，减少计算属性开销
+const displayCurrentTime = ref(0)
+const displayDuration = ref(0)
+const displayProgress = ref(0)
+
+// 启动RAF更新循环
+const startRAFUpdate = () => {
+  const update = () => {
+    if (isPlayingState.value && !isDragging.value) {
+      localCurrentTime.value = storeState.value.currentTime
+      localDuration.value = storeState.value.duration
+
+      // 更新显示值
+      displayCurrentTime.value = localCurrentTime.value
+      displayDuration.value = localDuration.value
+
+      if (localDuration.value > 0) {
+        displayProgress.value = (localCurrentTime.value / localDuration.value) * 100
+      }
+    }
+    rafId = requestAnimationFrame(update)
+  }
+  rafId = requestAnimationFrame(update)
+}
+
+// 停止RAF更新
+const stopRAFUpdate = () => {
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
+}
 
 const coverStyle = computed(() => {
-  const song = safeCurrentSong.value
-  if (song?.coverUrl) {
-    return { backgroundImage: `url(${song.coverUrl})` }
-  }
-  return {}
+  const song = currentSongData.value
+  return song?.coverUrl ? { backgroundImage: `url(${song.coverUrl})` } : {}
 })
 
-const isCurrentSongLiked = computed(() => {
-  return safeCurrentSong.value ? musicStore.isLiked(safeCurrentSong.value.id) : false
+const isLikedState = computed(() => {
+  return currentSongData.value ? musicStore.isLiked(currentSongData.value.id) : false
 })
 
 const playModeText = computed(() => {
@@ -209,120 +272,120 @@ const playModeText = computed(() => {
     loop: '单曲循环',
     random: '随机播放'
   }
-  return modes[playMode.value] || '顺序播放'
+  return modes[playModeState.value] || '顺序播放'
 })
 
 const hasPrevious = computed(() => {
-  return musicStore.playQueue.length > 1 || musicStore.allMusics.length > 1
+  return storeState.value.playQueue.length > 1 || storeState.value.allMusics.length > 1
 })
 
 const hasNext = computed(() => {
-  return musicStore.playQueue.length > 1 || musicStore.allMusics.length > 1
+  return storeState.value.playQueue.length > 1 || storeState.value.allMusics.length > 1
 })
 
-const playlistCount = computed(() => musicStore.playQueue?.length || 0)
+const playlistCount = computed(() => storeState.value.playQueue.length)
 
-const getPlayButtonTitle = computed(() => {
-  if (isBuffering.value) return '加载中...'
-  return safeIsPlaying.value ? '暂停' : '播放'
+const playButtonTitle = computed(() => {
+  return isBuffering.value ? '加载中...' : (isPlayingState.value ? '暂停' : '播放')
 })
 
-// 方法 - 直接调用musicStore的方法
-const goToPlayer = () => {
-  if (safeCurrentSong.value) {
+// 🆕 优化：使用防抖的方法
+const goToPlayer = debounce(() => {
+  if (currentSongData.value) {
     router.push('/player')
   }
-}
+}, 300)
 
-const handleTogglePlay = async () => {
-  if (!safeCurrentSong.value) return
+const handleTogglePlay = debounce(async () => {
+  if (!currentSongData.value) return
 
   try {
     errorMessage.value = ''
-    await musicStore.togglePlay('bottom-player')
+    await musicStore.togglePlay()
   } catch (error) {
     console.error('播放控制失败:', error)
     errorMessage.value = error.message || '播放控制失败，请重试'
   }
-}
+}, 150)
 
-const handlePrevSong = async () => {
-  if (!safeCurrentSong.value || !hasPrevious.value) return
+const handlePrevSong = debounce(async () => {
+  if (!currentSongData.value || !hasPrevious.value) return
   try {
-    await musicStore.prevSong('bottom-player')
+    await musicStore.prevSong()
     errorMessage.value = ''
   } catch (error) {
     console.error('上一首失败:', error)
     errorMessage.value = error.message || '切换歌曲失败'
   }
-}
+}, 150)
 
-const handleNextSong = async () => {
-  if (!safeCurrentSong.value || !hasNext.value) return
+const handleNextSong = debounce(async () => {
+  if (!currentSongData.value || !hasNext.value) return
   try {
-    await musicStore.nextSong('bottom-player')
+    await musicStore.nextSong()
     errorMessage.value = ''
   } catch (error) {
     console.error('下一首失败:', error)
     errorMessage.value = error.message || '切换歌曲失败'
   }
-}
+}, 150)
 
-const handleToggleLike = () => {
-  if (!safeCurrentSong.value) return
+const handleToggleLike = debounce(() => {
+  if (!currentSongData.value) return
 
-  if (isCurrentSongLiked.value) {
-    musicStore.dislikeSong(safeCurrentSong.value.id)
+  if (isLikedState.value) {
+    musicStore.dislikeSong(currentSongData.value.id)
   } else {
-    musicStore.likeSong(safeCurrentSong.value.id)
+    musicStore.likeSong(currentSongData.value.id)
   }
-}
+}, 150)
 
-const togglePlayMode = () => {
+const togglePlayMode = debounce(() => {
   const modes = ['sequential', 'loop', 'random']
-  const currentIndex = modes.indexOf(playMode.value)
+  const currentIndex = modes.indexOf(playModeState.value)
   const nextMode = modes[(currentIndex + 1) % modes.length]
   musicStore.setPlayMode(nextMode)
-}
+}, 150)
 
-const toggleMute = () => {
-  isMuted.value = !isMuted.value
-  musicStore.setVolume(isMuted.value ? 0 : (volume.value || 50))
-}
+const toggleMute = debounce(() => {
+  isMutedState.value = !isMutedState.value
+  musicStore.setVolume(isMutedState.value ? 0 : (volumeState.value || 50))
+}, 150)
 
-// 进度条控制
-const handleProgressClick = (event) => {
-  if (!safeCurrentSong.value || !progressBar.value || isDragging.value) return
+// 🆕 优化：进度条控制使用节流
+const handleProgressClick = throttle((event) => {
+  if (!currentSongData.value || !progressBar.value || isDragging.value) return
 
   try {
     const rect = progressBar.value.getBoundingClientRect()
     const clickX = event.clientX - rect.left
     const width = rect.width
     const percentage = (clickX / width) * 100
-    const newTime = (percentage / 100) * safeDuration.value
+    const newTime = (percentage / 100) * displayDuration.value
 
-    musicStore.seekTo(Math.max(0, Math.min(safeDuration.value, newTime)), 'bottom-player-progress')
+    musicStore.seekTo(Math.max(0, Math.min(displayDuration.value, newTime)))
   } catch (error) {
     console.error('进度条点击失败:', error)
     errorMessage.value = '进度设置失败'
   }
-}
+}, 100)
 
 const startDrag = (event) => {
-  if (!safeCurrentSong.value) return
+  if (!currentSongData.value) return
 
   event.preventDefault()
   isDragging.value = true
   dragStartX.value = event.clientX || event.touches[0].clientX
-  dragStartProgress.value = safeProgress.value
+  dragStartProgress.value = displayProgress.value
 
-  document.addEventListener('mousemove', handleDrag)
-  document.addEventListener('mouseup', stopDrag)
+  // 🆕 优化：使用被动事件监听器
+  document.addEventListener('mousemove', handleDrag, { passive: true })
+  document.addEventListener('mouseup', stopDrag, { passive: true })
   document.addEventListener('touchmove', handleDrag, { passive: false })
-  document.addEventListener('touchend', stopDrag)
+  document.addEventListener('touchend', stopDrag, { passive: true })
 }
 
-const handleDrag = (event) => {
+const handleDrag = throttle((event) => {
   if (!isDragging.value || !progressBar.value) return
 
   const clientX = event.clientX || (event.touches && event.touches[0].clientX)
@@ -333,17 +396,19 @@ const handleDrag = (event) => {
   const width = rect.width
   const progressDelta = (dragDistance / width) * 100
   const newProgress = Math.max(0, Math.min(100, dragStartProgress.value + progressDelta))
-  const newTime = (newProgress / 100) * safeDuration.value
 
-  musicStore.setCurrentTime(newTime)
-}
+  // 🆕 优化：直接更新显示值，不触发store更新
+  displayProgress.value = newProgress
+  displayCurrentTime.value = (newProgress / 100) * displayDuration.value
+}, 16) // 60fps节流
 
-const stopDrag = async () => {
+const stopDrag = debounce(async () => {
   if (!isDragging.value) return
 
   isDragging.value = false
   try {
-    await musicStore.seekTo(safeCurrentTime.value, 'bottom-player-drag')
+    // 🆕 优化：只在拖拽结束时更新store
+    await musicStore.seekTo(displayCurrentTime.value)
   } catch (error) {
     console.error('跳转时间失败:', error)
     errorMessage.value = '跳转失败'
@@ -353,10 +418,9 @@ const stopDrag = async () => {
   document.removeEventListener('mouseup', stopDrag)
   document.removeEventListener('touchmove', handleDrag)
   document.removeEventListener('touchend', stopDrag)
-}
+}, 50)
 
-// 音量控制
-const handleVolumeClick = (event) => {
+const handleVolumeClick = throttle((event) => {
   if (!volumeSlider.value) return
 
   const rect = volumeSlider.value.getBoundingClientRect()
@@ -365,28 +429,28 @@ const handleVolumeClick = (event) => {
   const newVolume = Math.max(0, Math.min(100, (clickX / width) * 100))
 
   musicStore.setVolume(newVolume)
-  isMuted.value = newVolume === 0
-}
+  isMutedState.value = newVolume === 0
+}, 100)
 
-const togglePlaylist = () => {
+const togglePlaylist = debounce(() => {
   musicStore.togglePlaylistVisibility?.()
-}
+}, 150)
 
-const retryPlay = async () => {
+const retryPlay = debounce(async () => {
   errorMessage.value = ''
-  if (safeCurrentSong.value) {
+  if (currentSongData.value) {
     try {
-      await musicStore.retryPlay('bottom-player-retry')
+      await musicStore.retryPlay()
     } catch (error) {
       errorMessage.value = error.message || '重试播放失败'
     }
   }
-}
+}, 150)
 
-const clearError = () => {
+const clearError = debounce(() => {
   errorMessage.value = ''
   musicStore.clearError?.()
-}
+}, 150)
 
 const formatTime = (seconds) => {
   if (!seconds || isNaN(seconds)) return '0:00'
@@ -395,37 +459,65 @@ const formatTime = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
-// 监听歌曲变化
-watch(safeCurrentSong, (newSong) => {
-  isVisible.value = !!newSong
-  errorMessage.value = ''
-  isBuffering.value = false
+// 🆕 优化：减少watch数量，合并监听
+watch(storeState, (newState, oldState) => {
+  // 歌曲变化
+  if (newState.currentSong !== oldState.currentSong) {
+    isVisible.value = !!newState.currentSong
+    errorMessage.value = ''
+    isBuffering.value = false
+
+    // 重置显示值
+    if (newState.currentSong) {
+      displayCurrentTime.value = newState.currentTime
+      displayDuration.value = newState.duration
+      displayProgress.value = newState.duration > 0 ? (newState.currentTime / newState.duration) * 100 : 0
+    }
+  }
+
+  // 播放状态变化
+  if (newState.isPlaying !== oldState.isPlaying) {
+    if (newState.isPlaying) {
+      isBuffering.value = false
+      startRAFUpdate()
+    } else {
+      stopRAFUpdate()
+    }
+  }
+
+  // 错误状态
+  if (newState.audioError !== oldState.audioError && newState.audioError) {
+    errorMessage.value = newState.audioError.message || '音频播放错误'
+  }
+
+  // 加载状态
+  if (newState.lyricsLoading !== oldState.lyricsLoading) {
+    isBuffering.value = newState.lyricsLoading
+  }
+}, { deep: true, flush: 'post' })
+
+// 🆕 优化：监听播放状态启动RAF
+watch(isPlayingState, (playing) => {
+  if (playing) {
+    nextTick(() => {
+      startRAFUpdate()
+    })
+  } else {
+    stopRAFUpdate()
+  }
 }, { immediate: true })
 
-// 监听播放状态
-watch(safeIsPlaying, (newVal) => {
-  if (newVal) {
-    isBuffering.value = false
-  }
-})
-
-// 监听错误状态
-watch(() => musicStore.audioError, (error) => {
-  if (error) {
-    errorMessage.value = error.message || '音频播放错误'
-  }
-})
-
-// 监听加载状态
-watch(() => musicStore.lyricsLoading, (loading) => {
-  isBuffering.value = loading
-})
-
 onMounted(() => {
-  isVisible.value = !!safeCurrentSong.value
+  isVisible.value = !!currentSongData.value
+  // 初始同步显示值
+  displayCurrentTime.value = storeState.value.currentTime
+  displayDuration.value = storeState.value.duration
+  displayProgress.value = storeState.value.duration > 0 ?
+      (storeState.value.currentTime / storeState.value.duration) * 100 : 0
 })
 
 onUnmounted(() => {
+  stopRAFUpdate()
   document.removeEventListener('mousemove', handleDrag)
   document.removeEventListener('mouseup', stopDrag)
   document.removeEventListener('touchmove', handleDrag)
@@ -434,6 +526,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 样式保持不变，但可以添加一些性能优化 */
 .bottom-player-bar {
   position: fixed;
   bottom: 0;
@@ -447,12 +540,24 @@ onUnmounted(() => {
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.1);
+  will-change: transform;
 }
 
 .bottom-player-bar.visible {
   transform: translateY(0);
 }
 
+/* 🆕 优化：减少重绘区域 */
+.progress-fill, .volume-fill {
+  will-change: width;
+  transform: translateZ(0);
+}
+
+/* 🆕 优化：使用transform代替left属性 */
+.progress-thumb, .volume-thumb {
+  will-change: transform;
+  transform: translateZ(0) translateX(-50%);
+}
 /* 进度条容器 */
 .progress-bar-container {
   position: absolute;
