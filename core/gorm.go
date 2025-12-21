@@ -52,6 +52,7 @@ func InitDB() error {
 		// &core.User{},
 		&Playlist{},
 		&PlaylistItem{},
+		&PlayHistory{},
 	)
 	if err != nil {
 		log.Printf("AutoMigrate error: %v", err)

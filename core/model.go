@@ -25,26 +25,26 @@ import (
 type Label string
 
 const (
-	LabelPop  Label = "Pop" 	// 流行
-	LabelRock      	Label = "Rock"	// 摇滚
-	LabelFolk      	Label = "Folk"	// 民谣
-	LabelElectronic Label = "Electronic"	// 电子
-	LabelBlue    	Label = "Blue"		// 蓝调
-	LabelAnime 		Label = "Anime"		// 二次元
-	LabelClassical 	Label = "Classical"	// 古典
-	LabelHipHop 		Label = "HipHop"	// HipHop
-	LabelJazz 			Label = "Jazz"		// 爵士
-	LabelInstrumental 	Label = "Instrumental" 	// 纯音乐
-	LabelStudying Label = "Studying"	// 学习/工作
-	LabelFitness Label = "Fitness"		// 锻炼/健身
-	LabelSleepAid Label = "SleepAid"	// 助眠
-	LabelRelax Label = "Relax"	// 放松
-	LabelParty Label = "Party"		// 派对聚会
-	LabelTravel Label = "Ttravel"			// 旅行
-	LabelDriving Label = "Driving"	// 驾驶通勤
-	LabelWakeUp Label = "WakeUp"	// 早晨起床
-	LabelFeelDown Label = "FeelDown"	// 沮丧
-	LabelRelease Label = "Release"	// 情绪宣泄
+	LabelPop          Label = "Pop"          // 流行
+	LabelRock         Label = "Rock"         // 摇滚
+	LabelFolk         Label = "Folk"         // 民谣
+	LabelElectronic   Label = "Electronic"   // 电子
+	LabelBlue         Label = "Blue"         // 蓝调
+	LabelAnime        Label = "Anime"        // 二次元
+	LabelClassical    Label = "Classical"    // 古典
+	LabelHipHop       Label = "HipHop"       // HipHop
+	LabelJazz         Label = "Jazz"         // 爵士
+	LabelInstrumental Label = "Instrumental" // 纯音乐
+	LabelStudying     Label = "Studying"     // 学习/工作
+	LabelFitness      Label = "Fitness"      // 锻炼/健身
+	LabelSleepAid     Label = "SleepAid"     // 助眠
+	LabelRelax        Label = "Relax"        // 放松
+	LabelParty        Label = "Party"        // 派对聚会
+	LabelTravel       Label = "Ttravel"      // 旅行
+	LabelDriving      Label = "Driving"      // 驾驶通勤
+	LabelWakeUp       Label = "WakeUp"       // 早晨起床
+	LabelFeelDown     Label = "FeelDown"     // 沮丧
+	LabelRelease      Label = "Release"      // 情绪宣泄
 )
 
 var AllLabels = []Label{
@@ -97,6 +97,18 @@ type PlaylistItem struct {
 
 func (PlaylistItem) TableName() string {
 	return "playlist_music"
+}
+
+// 播放历史记录
+type PlayHistory struct {
+	ID       int64     `json:"id" gorm:"primaryKey;autoIncrement;column:id"`
+	MusicID  int64     `json:"musicId" gorm:"column:music_id;not null;index"`
+	PlayedAt time.Time `json:"playedAt" gorm:"column:played_at;not null;index"`
+	Music    Music     `json:"music" gorm:"foreignKey:MusicID;references:id"`
+}
+
+func (PlayHistory) TableName() string {
+	return "play_history"
 }
 
 // ==== 操作函数 ====
@@ -250,4 +262,50 @@ func GetMusicByID(musicID int64) (*Music, error) {
 		return nil, err
 	}
 	return &music, nil
+}
+
+// 记录播放记录
+func RecordPlayHistory(music *Music) {
+	if music == nil {
+		fmt.Println(errors.New("music cannot be nil"))
+	}
+
+	playHistory := PlayHistory{
+		MusicID:  music.Id,
+		PlayedAt: time.Now(),
+	}
+
+	if err := DB.Create(&playHistory).Error; err != nil {
+		fmt.Println(errors.New("failed to record play history: " + err.Error()))
+	}
+}
+
+// 查询播放记录
+func GetPlayHistory(limit int) ([]Music, error) {
+	if limit <= 0 {
+		limit = 50 // 默认限制
+	}
+
+	var playHistories []PlayHistory
+	err := DB.Preload("Music").
+		Order("played_at DESC").
+		Limit(limit).
+		Find(&playHistories).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get play history: %w", err)
+	}
+
+	// 提取音乐信息并去重（因为同一首歌可能被播放多次）
+	musicMap := make(map[int64]Music)
+	var musics []Music
+
+	for _, ph := range playHistories {
+		if _, exists := musicMap[ph.Music.Id]; !exists {
+			musicMap[ph.Music.Id] = ph.Music
+			musics = append(musics, ph.Music)
+		}
+	}
+
+	return musics, nil
 }

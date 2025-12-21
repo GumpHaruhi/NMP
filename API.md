@@ -94,6 +94,7 @@
 17. 歌曲反馈：取消收藏
 18. 搜索功能：模糊搜索歌曲
 19. AI推荐：对话式智能推荐
+20. 查询播放历史记录
 
 ### 1. 健康检查
 
@@ -1480,5 +1481,56 @@
 
   * 失败：500或400
 
+
+
+### 20. 查询播放历史记录
+
+* **作用**：播放记录
+
+* **请求类型**：GET
+
+* **请求路径**：`/api/music/play/history`
+
+* **请求参数**：无
+
+* **返回结果**：
+  
+  * 成功（200）：
+
+```
+{
+    "code": 200,
+    "data": [
+        {
+            "id": 3,
+            "title": "可惜没如果",
+            "singer": "林俊杰",
+            "labels": [
+                "HipHop"
+            ],
+            "delabels": null,
+            "audioUrl": "noifs.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "noifs.lrc"
+        },
+        {
+            "id": 1,
+            "title": "晴天",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Rock"
+            ],
+            "delabels": null,
+            "audioUrl": "qingtian.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "qingtian.lrc"
+        }
+    ],
+    "message": "查询成功"
+}
+```
+
+  * 失败： 500
 
 > （注：文档部分内容可能由 AI 生成）
