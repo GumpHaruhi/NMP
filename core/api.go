@@ -345,6 +345,8 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 			return
 		}
 
+		go RecordPlayHistory(&m) // 记录
+
 		serveAsset(c, m.AudioURL)
 	})
 
@@ -458,6 +460,24 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		}
 		log.Printf("User unstar music id=%d", musicID)
 		c.String(http.StatusOK, "Unstar!")
+	})
+
+	// 查询播放历史记录
+	router.GET("/api/music/play/history", func(c *gin.Context) {
+		history, err := GetPlayHistory(50) // 默认返回最近50条
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    http.StatusInternalServerError,
+				"message": "查询播放记录失败",
+				"error":   err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "查询成功",
+			"data":    history,
+		})
 	})
 }
 
