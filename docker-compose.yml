@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  musicapp:
+    build: .
+    container_name: NMP-services
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./music:/music:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://LiHua:12345678@db:5432/musicdb?sslmode=disable
+      # LLM 配置
+      - LLM_API_URL=https://ark.cn-beijing.volces.com/api/v3/chat/completions
+      - LLM_MODEL=doubao-1-5-pro-32k-250115
+      - LLM_API_KEY=1c2fa22d-28cd-4436-818f-34814a1ece18
+    restart: unless-stopped
+  
+  # PostgreSQL 数据库服务
+  db:
+    image: postgres:15-alpine
+    container_name: NMP-db
+    environment:
+      # 设置数据库的超级用户、密码和默认数据库名
+      # 必须与上面的 DATABASE_URL 匹配
+      - POSTGRES_USER=LiHua
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=musicdb
+    volumes:
+      # - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U LiHua -d musicdb"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    restart: unless-stopped
+
+# 定义命名的 volume
+volumes:
+  postgres-data:
