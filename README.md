@@ -26,7 +26,7 @@ NMP
 
 在项目根目录下键入命令：
 
-- **构建并启动服务**: docker compose up --build
+- **构建并启动服务**: `docker compose up --build`
 
 > 初次构建可能耗费些时间
 
