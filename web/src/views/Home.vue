@@ -26,7 +26,11 @@
       <!-- 中间魔法师区域 -->
       <div class="center-scene">
         <!-- 魔法师头顶的歌单显示区域 -->
-        <div v-if="showGeneratedPlaylist" class="playlist-bubble">
+        <div
+            v-if="showGeneratedPlaylist"
+            class="playlist-bubble"
+            @click="goToGeneratedPlaylist"
+        >
           <div class="playlist-info">
             <div class="playlist-cover">
               <div class="cover-placeholder">🎵</div>
@@ -34,12 +38,13 @@
             <div class="playlist-details">
               <h3>{{ generatedPlaylist.name }}</h3>
               <p>{{ generatedPlaylist.songCount }} 首歌曲</p>
+              <small class="click-hint">点击查看详情 →</small>
             </div>
             <div class="playlist-actions">
-              <button class="play-btn" @click="playGeneratedPlaylist(generatedPlaylist)">
+              <button class="play-btn" @click.stop="playGeneratedPlaylist(generatedPlaylist)">
                 ▶ 播放
               </button>
-              <button class="save-btn" @click="openSaveAIPlaylistModal">
+              <button class="save-btn" @click.stop="openSaveAIPlaylistModal">
                 ⭐ 保存
               </button>
             </div>
@@ -125,7 +130,6 @@
               <img src="@/assets/images/bag.png" alt="袋子" class="bag-img" />
               <div class="bag-content">
                 <span class="bag-text">{{ tag.name }}</span>
-                <span v-if="selectedTags.includes(tag.id)" class="checkmark">✓</span>
               </div>
             </div>
           </div>
@@ -178,6 +182,8 @@ import AppFooter from '@/components/AppFooter.vue'
 import SaveAIPlaylistModal from '@/components/SaveAIPlaylistModal.vue'
 import BottomPlayerBar from '@/components/BottomPlayerBar.vue'
 
+
+
 const router = useRouter()
 const musicStore = useMusicStore()
 
@@ -206,29 +212,29 @@ const aiPlaylistData = reactive({
 
 // 音乐类型数据
 const musicGenres = ref([
-  { id: 'pop', name: '流行', icon: '🎤', count: 0 },
-  { id: 'rock', name: '摇滚', icon: '🎸', count: 0 },
-  { id: 'jazz', name: '爵士', icon: '🎷', count: 0 },
-  { id: 'classical', name: '古典', icon: '🎻', count: 0 },
-  { id: 'hiphop', name: '嘻哈', icon: '🎧', count: 0 },
-  { id: 'electronic', name: '电子', icon: '⚡', count: 0 },
-  { id: 'r&b', name: 'R&B', icon: '🎹', count: 0 }
+  { id: 'Pop', name: '流行', icon: '🎤', count: 0 },
+  { id: 'Rock', name: '摇滚', icon: '🎸', count: 0 },
+  { id: 'Jazz', name: '爵士', icon: '🎷', count: 0 },
+  { id: 'Classical', name: '古典', icon: '🎻', count: 0 },
+  { id: 'Hiphop', name: '嘻哈', icon: '🎧', count: 0 },
+  { id: 'Electronic', name: '电子', icon: '⚡', count: 0 },
+  { id: 'Folk', name: '民谣', icon: '🎵', count: 0 }
 ])
 
 // 场景/心情标签
 const filterTags = ref([
-  { id: 'chill', name: '放松' },
-  { id: 'energy', name: '能量' },
-  { id: 'work', name: '工作' },
-  { id: 'workout', name: '健身' },
-  { id: 'study', name: '学习' },
-  { id: 'sleep', name: '睡眠' },
-  { id: 'party', name: '派对' },
-  { id: 'romantic', name: '浪漫' },
-  { id: 'nostalgic', name: '怀旧' },
-  { id: 'focus', name: '专注' },
-  { id: 'travel', name: '旅行' },
-  { id: 'morning', name: '清晨' }
+  { id: 'Studying', name: '学习/工作' },
+  { id: 'Fitness', name: '锻炼/健身' },
+  { id: 'SleepAid', name: '助眠' },
+  { id: 'Relax', name: '放松' },
+  { id: 'Party', name: '派对聚会' },
+  { id: 'Travel', name: '旅行' },
+  { id: 'Driving', name: '驾驶通勤' },
+  { id: 'WakeUp', name: '早晨起床' },
+  { id: 'FeelDown', name: '沮丧' },
+  { id: 'Release', name: '情绪宣泄' },
+  { id: 'Instrumental', name: '纯音乐' },
+  { id: 'Anime', name: '二次元' }
 ])
 
 // 快速提示
@@ -252,19 +258,19 @@ const hasSelection = computed(() => {
 
 // 关键字到标签的映射
 const keywordToTags = {
-  '学习': ['classical', 'jazz'],
-  '运动': ['rock', 'hiphop'],
-  '睡觉': ['classical'],
-  '放松': ['jazz'],
-  '开车': ['pop'],
-  '雨天': ['jazz'],
-  '派对': ['pop', 'electronic'],
-  '早晨': ['pop'],
-  '工作': ['work', 'focus'],
-  '健身': ['rock'],
-  '旅行': ['jazz', 'pop'],
-  '浪漫': ['pop'],
-  '怀旧': ['jazz', 'classical']
+  '学习': ['Studying', 'Classical'],
+  '运动': ['Fitness', 'Rock'],
+  '睡觉': ['SleepAid', 'Classical'],
+  '放松': ['Relax', 'Jazz'],
+  '开车': ['Driving', 'Pop'],
+  '雨天': ['Relax', 'Jazz'],
+  '派对': ['Party', 'Pop', 'Electronic'],
+  '早晨': ['WakeUp', 'Pop'],
+  '工作': ['Studying', 'Classical'],
+  '健身': ['Fitness', 'Rock'],
+  '旅行': ['Travel', 'Pop', 'Jazz'],
+  '浪漫': ['Pop', 'Relax'],
+  '怀旧': ['Jazz', 'Classical']
 }
 
 // 通用的添加掉落物函数
@@ -358,18 +364,18 @@ const generatePlaylistFromSelection = async () => {
   if (selectedTags.value.length > 0) {
     // 将标签映射到音乐类型
     const tagMapping = {
-      'chill': ['jazz', 'classical'],
-      'energy': ['rock', 'electronic'],
-      'work': ['classical', 'jazz'],
-      'workout': ['rock', 'hiphop'],
-      'study': ['classical'],
-      'sleep': ['classical'],
-      'party': ['pop', 'electronic'],
-      'romantic': ['pop'],
-      'nostalgic': ['jazz', 'classical'],
-      'focus': ['classical', 'jazz'],
-      'travel': ['pop', 'jazz'],
-      'morning': ['pop']
+      'Studying': ['Classical', 'Jazz', 'Instrumental'],
+      'Fitness': ['Rock', 'HipHop', 'Electronic'],
+      'SleepAid': ['Classical', 'Instrumental'],
+      'Relax': ['Jazz', 'Classical', 'Instrumental'],
+      'Party': ['Pop', 'Electronic', 'HipHop'],
+      'Travel': ['Pop', 'Jazz', 'Folk'],
+      'Driving': ['Pop', 'Rock'],
+      'WakeUp': ['Pop', 'Electronic'],
+      'FeelDown': ['Jazz', 'Folk'],
+      'Release': ['Rock', 'HipHop'],
+      'Instrumental': ['Classical', 'Jazz'],
+      'Anime': ['Pop', 'Electronic']
     }
 
     const tagGenres = selectedTags.value.flatMap(tag => tagMapping[tag] || [])
@@ -509,11 +515,9 @@ const saveAIPlaylist = async (formData) => {
 // 原有的AI响应生成函数
 const generateAIResponse = async (userMessage) => {
   console.log('AI请求:', userMessage)
-
   try {
     // 尝试调用后端API
     const response = await musicStore.getAIRecommendation(userMessage)
-
     if (response.code === 200) {
       const aiData = response.data
       return {
@@ -535,11 +539,9 @@ const generateAIResponse = async (userMessage) => {
     return generateLocalResponse(userMessage)
   }
 }
-
 const generateLocalResponse = (userMessage) => {
   let matchedKeyword = '精选'
   let matchedTags = []
-
   for (const [keyword, tags] of Object.entries(keywordToTags)) {
     if (userMessage.includes(keyword)) {
       matchedKeyword = keyword
@@ -547,20 +549,15 @@ const generateLocalResponse = (userMessage) => {
       break
     }
   }
-
   let filteredSongs = allSongs.value
-
   if (matchedTags.length > 0) {
     filteredSongs = allSongs.value.filter(song => {
       return song.labels?.some(label => {
-        const labelStr = label.toString().toLowerCase()
-        return matchedTags.some(tag =>
-            labelStr.includes(tag.toLowerCase())
-        )
+        const labelStr = label.toString()
+        return matchedTags.some(tag => labelStr === tag)
       })
     })
   }
-
   if (filteredSongs.length === 0) {
     filteredSongs = [...allSongs.value]
         .sort(() => Math.random() - 0.5)
@@ -570,9 +567,7 @@ const generateLocalResponse = (userMessage) => {
         .sort(() => Math.random() - 0.5)
         .slice(0, 5)
   }
-
   const totalDuration = filteredSongs.reduce((sum, song) => sum + (song.duration || 0), 0)
-
   return {
     content: `根据"${userMessage}"为你推荐（标签: ${matchedTags.join(', ') || '随机'}）：`,
     playlist: {
@@ -679,6 +674,31 @@ const formatPublishTime = (id) => {
   if (hoursAgo < 1) return '刚刚'
   else if (hoursAgo < 24) return `${hoursAgo}小时前`
   else return `${Math.floor(hoursAgo / 24)}天前`
+}
+
+
+// 跳转到临时歌单详情页
+const goToGeneratedPlaylist = () => {
+  if (!generatedPlaylist.value) return
+
+  // 将歌单数据编码为URL参数
+  const playlistData = encodeURIComponent(JSON.stringify({
+    ...generatedPlaylist.value,
+    // 确保有必要的字段
+    id: generatedPlaylist.value.id || Date.now(),
+    name: generatedPlaylist.value.name || 'AI推荐歌单',
+    description: generatedPlaylist.value.description || '魔法师精心调制的专属歌单',
+    songCount: generatedPlaylist.value.songCount || generatedPlaylist.value.songs?.length || 0,
+    duration: generatedPlaylist.value.duration || 0,
+    songs: generatedPlaylist.value.songs || [],
+    tags: generatedPlaylist.value.tags || []
+  }))
+
+  // 跳转到临时歌单详情页
+  router.push({
+    path: '/temp-playlist',
+    query: { playlistData }
+  })
 }
 
 // 初始化
@@ -815,7 +835,7 @@ onMounted(async () => {
 
 /* 魔法师头顶的歌单气泡 */
 .playlist-bubble {
-  position: absolute;
+  position: fixed;
   top: 100px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -826,6 +846,52 @@ onMounted(async () => {
   min-width: 300px;
   z-index: 10;
   animation: float 3s ease-in-out infinite;
+}
+
+/* 点击提示文字 */
+.click-hint {
+  color: var(--primary-color);
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 4px;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+.playlist-bubble:hover .click-hint {
+  opacity: 1;
+}
+/* 歌单气泡悬停效果 */
+.playlist-bubble {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.playlist-bubble:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+.playlist-bubble:hover::after {
+  content: '查看详情';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* 防止按钮点击事件冒泡 */
+.playlist-actions {
+  pointer-events: auto;
+}
+.playlist-actions button {
+  pointer-events: auto;
 }
 
 @keyframes float {
@@ -978,6 +1044,8 @@ onMounted(async () => {
   opacity: 1;
   transform: translate(10px, -50%); /* 向右移动并显示 */
 }
+
+
 
 /* 桌子区域 */
 .table-area {
@@ -1208,6 +1276,8 @@ onMounted(async () => {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+
 
 /* 推荐板块包装器 */
 .recommendations-wrapper {

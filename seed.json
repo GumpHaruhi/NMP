@@ -41,6 +41,884 @@
             "audioUrl": "TRY.mp3",
             "coverUrl": "temp.jpg",
             "lyricsUrl": "TRY.lrc"
+        },
+        {
+            "title": "cherry blossom scatter",
+            "singer": "hisohkah",
+            "labels": [
+                "Instrumental",
+                "Studying"
+            ],
+            "audioUrl": "CBS.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Asphyxia",
+            "singer": "Kaoru Wada",
+            "labels": [
+                "Instrumental",
+                "Studying"
+            ],
+            "audioUrl": "Asphyxia.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Collapsing World",
+            "singer": "Lightscape",
+            "labels": [
+                "Instrumental",
+                "Studying"
+            ],
+            "audioUrl": "CollapsingWorld.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "melodic minor",
+            "singer": "明洋",
+            "labels": [
+                "Instrumental",
+                "Studying"
+            ],
+            "audioUrl": "melodicminor.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "MELANCHOLY",
+            "singer": "White Cherry",
+            "labels": [
+                "Instrumental",
+                "Studying"
+            ],
+            "audioUrl": "MELANCHOLY.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "揽胜进行曲",
+            "singer": "动词does",
+            "labels": [
+                "Fitness"
+            ],
+            "audioUrl": "LSJXQ.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "LSJXQ.lrc"
+        },
+        {
+            "title": "Mood",
+            "singer": "24KGoldn&iann dior",
+            "labels": [
+                "Fitness"
+            ],
+            "audioUrl": "Mood.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Mood.lrc"
+        },
+        {
+            "title": "Turn All the Lights On",
+            "singer": "T-Pain&Ne-Yo",
+            "labels": [
+                "Fitness"
+            ],
+            "audioUrl": "TATLO.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "TATLO.lrc"
+        },
+        {
+            "title": "Counterparty",
+            "singer": "Hipinoze",
+            "labels": [
+                "Fitness"
+            ],
+            "audioUrl": "Counterparty.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Counterparty.lrc"
+        },
+        {
+            "title": "Dancer In The Dark",
+            "singer": "GRABOTE&Marc Philippe",
+            "labels": [
+                "Fitness"
+            ],
+            "audioUrl": "DID.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "DID.lrc"
+        },
+        {
+            "title": "Park",
+            "singer": "yutaka hirasaka",
+            "labels": [
+                "SleepAid",
+                "Instrumental"
+            ],
+            "audioUrl": "Park.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "River Flows in You",
+            "singer": "李闰珉",
+            "labels": [
+                "SleepAid",
+                "Instrumental"
+            ],
+            "audioUrl": "RFIY.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Weightless",
+            "singer": "Marconi Union",
+            "labels": [
+                "SleepAid",
+                "Instrumental"
+            ],
+            "audioUrl": "Weightless.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Unsaid",
+            "singer": "任素汐",
+            "labels": [
+                "SleepAid"
+            ],
+            "audioUrl": "Unsaid.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Unsaid.lrc"
+        },
+        {
+            "title": "Fantasy Theme",
+            "singer": "Kevin Krauter",
+            "labels": [
+                "SleepAid"
+            ],
+            "audioUrl": "FantasyTheme.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "FantasyTheme.lrc"
+        },
+        {
+            "title": "青石巷",
+            "singer": "魏琮霏",
+            "labels": [
+                "Relax",
+                "Instrumental"
+            ],
+            "audioUrl": "QSX.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "孤山（钢琴曲）",
+            "singer": "春春的纯音",
+            "labels": [
+                "Relax",
+                "Instrumental"
+            ],
+            "audioUrl": "GS.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Solitude",
+            "singer": "坂本龍一",
+            "labels": [
+                "Relax",
+                "Instrumental"
+            ],
+            "audioUrl": "Solitude.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "春日",
+            "singer": "四季音色",
+            "labels": [
+                "Relax",
+                "Instrumental"
+            ],
+            "audioUrl": "CR.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Driftwood",
+            "singer": "Dan Gibson",
+            "labels": [
+                "Relax",
+                "Instrumental"
+            ],
+            "audioUrl": "Driftwood.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Sunflower",
+            "singer": "Post Malone&Swae Lee",
+            "labels": [
+                "Party"
+            ],
+            "audioUrl": "Sunflower.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Sunflower.lrc"
+        },
+        {
+            "title": "Skin",
+            "singer": "Rag'n'Bone Man",
+            "labels": [
+                "Party"
+            ],
+            "audioUrl": "Skin.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Skin.lrc"
+        },
+        {
+            "title": "Limitless",
+            "singer": "Martin Garrix&Mesto",
+            "labels": [
+                "Party",
+                "Instrumental"
+            ],
+            "audioUrl": "Limitless.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "MusicOnly.lrc"
+        },
+        {
+            "title": "Faded",
+            "singer": "Alan Walker",
+            "labels": [
+                "Party"
+            ],
+            "audioUrl": "Faded.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Faded.lrc"
+        },
+        {
+            "title": "Animals",
+            "singer": "Maroon 5",
+            "labels": [
+                "Party"
+            ],
+            "audioUrl": "Animals.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Animals.lrc"
+        },
+        {
+            "title": "稻香",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Relax",
+                "Travel",
+                "FeelDown"
+            ],
+            "audioUrl": "周杰伦-稻香.mp3",
+            "coverUrl": "周杰伦-稻香.jpg",
+            "lyricsUrl": "周杰伦-稻香.lrc"
+        },
+        {
+            "title": "告白气球",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Relax",
+                "Party",
+                "Travel"
+            ],
+            "audioUrl": "周杰伦-告白气球.mp3",
+            "coverUrl": "周杰伦-告白气球.jpg",
+            "lyricsUrl": "周杰伦-告白气球.lrc"
+        },
+        {
+            "title": "青花瓷",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Relax",
+                "Studying",
+                "Instrumental"
+            ],
+            "audioUrl": "周杰伦-青花瓷.mp3",
+            "coverUrl": "周杰伦-青花瓷.jpg",
+            "lyricsUrl": "周杰伦-青花瓷.lrc"
+        },
+        {
+            "title": "一路向北",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Driving",
+                "Travel",
+                "FeelDown"
+            ],
+            "audioUrl": "周杰伦-一路向北.mp3",
+            "coverUrl": "周杰伦-一路向北.jpg",
+            "lyricsUrl": "周杰伦-一路向北.lrc"
+        },
+        {
+            "title": "半岛铁盒",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Relax",
+                "Studying",
+                "FeelDown"
+            ],
+            "audioUrl": "周杰伦-半岛铁盒.mp3",
+            "coverUrl": "周杰伦-半岛铁盒.jpg",
+            "lyricsUrl": "周杰伦-半岛铁盒.lrc"
+        },
+        {
+            "title": "园游会",
+            "singer": "周杰伦",
+            "labels": [
+                "Pop",
+                "Party",
+                "Travel",
+                "Relax"
+            ],
+            "audioUrl": "周杰伦-园游会.mp3",
+            "coverUrl": "周杰伦-园游会.jpg",
+            "lyricsUrl": "周杰伦-园游会.lrc"
+        },
+        {
+            "title": "红色高跟鞋",
+            "singer": "蔡健雅",
+            "labels": [
+                "Pop",
+                "Relax",
+                "Driving",
+                "Party"
+            ],
+            "audioUrl": "蔡健雅-红色高跟鞋.mp3",
+            "coverUrl": "蔡健雅-红色高跟鞋.jpg",
+            "lyricsUrl": "蔡健雅-红色高跟鞋.lrc"
+        },
+        {
+            "title": "特别的人",
+            "singer": "方大同",
+            "labels": [
+                "Pop",
+                "Relax",
+                "FeelDown",
+                "Jazz"
+            ],
+            "audioUrl": "方大同-特别的人.mp3",
+            "coverUrl": "方大同-特别的人.jpg",
+            "lyricsUrl": "方大同-特别的人.lrc"
+        },
+        {
+            "title": "有何不可",
+            "singer": "许嵩",
+            "labels": [
+                "Pop",
+                "Relax",
+                "Travel",
+                "WakeUp"
+            ],
+            "audioUrl": "许嵩-有何不可.mp3",
+            "coverUrl": "许嵩-有何不可.jpg",
+            "lyricsUrl": "许嵩-有何不可.lrc"
+        },
+        {
+            "title": "演员",
+            "singer": "薛之谦",
+            "labels": [
+                "Pop",
+                "FeelDown",
+                "Relax",
+                "Studying"
+            ],
+            "audioUrl": "薛之谦-演员.mp3",
+            "coverUrl": "薛之谦-演员.jpg",
+            "lyricsUrl": "薛之谦-演员.lrc"
+        },
+        {
+            "title": "潜龙勿用",
+            "singer": "谢霆锋",
+            "labels": [
+                "Rock",
+                "Release",
+                "Fitness",
+                "Driving"
+            ],
+            "audioUrl": "谢霆锋-潜龙勿用.mp3",
+            "coverUrl": "谢霆锋-潜龙勿用.jpg",
+            "lyricsUrl": "谢霆锋-潜龙勿用.lrc"
+        },
+        {
+            "title": "The Beginning",
+            "singer": "ONE OK ROCK",
+            "labels": [
+                "Rock",
+                "Fitness",
+                "WakeUp",
+                "Release"
+            ],
+            "audioUrl": "ONE OK ROCK-The Beginning.mp3",
+            "coverUrl": "ONE OK ROCK-The Beginning.jpg",
+            "lyricsUrl": "ONE OK ROCK-The Beginning.lrc"
+        },
+        {
+            "title": "活着Viva",
+            "singer": "谢霆锋",
+            "labels": [
+                "Rock",
+                "Fitness",
+                "Party",
+                "Release"
+            ],
+            "audioUrl": "谢霆锋-活着Viva.mp3",
+            "coverUrl": "谢霆锋-活着Viva.jpg",
+            "lyricsUrl": "谢霆锋-活着Viva.lrc"
+        },
+        {
+            "title": "Hey Jude",
+            "singer": "The Beatles",
+            "labels": [
+                "Rock",
+                "Relax",
+                "Party",
+                "Travel"
+            ],
+            "audioUrl": "The Beatles-Hey Jude.mp3",
+            "coverUrl": "The Beatles-Hey Jude.jpg",
+            "lyricsUrl": "The Beatles-Hey Jude.lrc"
+        },
+        {
+            "title": "We Will Rock You",
+            "singer": "Queen",
+            "labels": [
+                "Rock",
+                "Fitness",
+                "Party",
+                "WakeUp"
+            ],
+            "audioUrl": "Queen-We Will Rock You.mp3",
+            "coverUrl": "Queen-We Will Rock You.jpg",
+            "lyricsUrl": "Queen-We Will Rock You.lrc"
+        },
+        {
+            "title": "ハイド・アンド・シーク",
+            "singer": "渡会雲雀",
+            "labels": [
+                "Electronic",
+                "Studying",
+                "Relax",
+                "Instrumental"
+            ],
+            "audioUrl": "渡会雲雀-ハイド・アンド・シーク.mp3",
+            "coverUrl": "渡会雲雀-ハイド・アンド・シーク.jpg",
+            "lyricsUrl": "渡会雲雀-ハイド・アンド・シーク.lrc"
+        },
+        {
+            "title": "砂の惑星",
+            "singer": "初音ミク&米津玄師",
+            "labels": [
+                "Electronic",
+                "Rock",
+                "Anime",
+                "Fitness",
+                "Release"
+            ],
+            "audioUrl": "初音ミク&米津玄師-砂の惑星.mp3",
+            "coverUrl": "初音ミク&米津玄師-砂の惑星.jpg",
+            "lyricsUrl": "初音ミク&米津玄師-砂の惑星.lrc"
+        },
+        {
+            "title": "Rodeo de Chocobo",
+            "singer": "植松伸夫",
+            "labels": [
+                "Electronic",
+                "Instrumental",
+                "Studying",
+                "WakeUp"
+            ],
+            "audioUrl": "植松伸夫-Rodeo de Chocobo.mp3",
+            "coverUrl": "植松伸夫-Rodeo de Chocobo.jpg",
+            "lyricsUrl": "植松伸夫-Rodeo de Chocobo.lrc"
+        },
+        {
+            "title": "Sunburst",
+            "singer": "Tobu&Itro",
+            "labels": [
+                "Electronic",
+                "Fitness",
+                "WakeUp",
+                "Travel"
+            ],
+            "audioUrl": "Tobu&Itro-Sunburst.mp3",
+            "coverUrl": "Tobu&Itro-Sunburst.jpg",
+            "lyricsUrl": "Tobu&Itro-Sunburst.lrc"
+        },
+        {
+            "title": "Alone",
+            "singer": "marshmello",
+            "labels": [
+                "Electronic",
+                "Party",
+                "Fitness",
+                "Release"
+            ],
+            "audioUrl": "marshmello-Alone.mp3",
+            "coverUrl": "marshmello-Alone.jpg",
+            "lyricsUrl": "marshmello-Alone.lrc"
+        },
+        {
+            "title": "成都",
+            "singer": "赵雷",
+            "labels": [
+                "Folk",
+                "Travel",
+                "Relax",
+                "FeelDown"
+            ],
+            "audioUrl": "赵雷-成都.mp3",
+            "coverUrl": "赵雷-成都.jpg",
+            "lyricsUrl": "赵雷-成都.lrc"
+        },
+        {
+            "title": "易燃易爆炸",
+            "singer": "陈粒",
+            "labels": [
+                "Folk",
+                "Release",
+                "FeelDown",
+                "Driving"
+            ],
+            "audioUrl": "陈粒-易燃易爆炸.mp3",
+            "coverUrl": "陈粒-易燃易爆炸.jpg",
+            "lyricsUrl": "陈粒-易燃易爆炸.lrc"
+        },
+        {
+            "title": "走马",
+            "singer": "陈粒",
+            "labels": [
+                "Folk",
+                "Relax",
+                "Studying",
+                "SleepAid"
+            ],
+            "audioUrl": "陈粒-走马.mp3",
+            "coverUrl": "陈粒-走马.jpg",
+            "lyricsUrl": "陈粒-走马.lrc"
+        },
+        {
+            "title": "Ontario",
+            "singer": "Novo Amor&Lowswimmer",
+            "labels": [
+                "Folk",
+                "Relax",
+                "SleepAid",
+                "Studying"
+            ],
+            "audioUrl": "Novo Amor&Lowswimmer-Ontario.mp3",
+            "coverUrl": "Novo Amor&Lowswimmer-Ontario.jpg",
+            "lyricsUrl": "Novo Amor&Lowswimmer-Ontario.lrc"
+        },
+        {
+            "title": "东北民谣",
+            "singer": "毛不易",
+            "labels": [
+                "Folk",
+                "Travel",
+                "Relax",
+                "FeelDown"
+            ],
+            "audioUrl": "毛不易-东北民谣.mp3",
+            "coverUrl": "毛不易-东北民谣.jpg",
+            "lyricsUrl": "毛不易-东北民谣.lrc"
+        },
+        {
+            "title": "One Track Mind",
+            "singer": "Eric Clapton",
+            "labels": [
+                "Blue",
+                "Relax",
+                "Driving",
+                "Jazz"
+            ],
+            "audioUrl": "Eric Clapton-One Track Mind.mp3",
+            "coverUrl": "Eric Clapton-One Track Mind.jpg",
+            "lyricsUrl": "Eric Clapton-One Track Mind.lrc"
+        },
+        {
+            "title": "Kiss Of Death",
+            "singer": "Tinsley Ellis",
+            "labels": [
+                "Blue",
+                "Release",
+                "Driving",
+                "FeelDown"
+            ],
+            "audioUrl": "Tinsley Ellis-Kiss Of Death.mp3",
+            "coverUrl": "Tinsley Ellis-Kiss Of Death.jpg",
+            "lyricsUrl": "Tinsley Ellis-Kiss Of Death.lrc"
+        },
+        {
+            "title": "Powerful Stuff",
+            "singer": "Sean Hayes",
+            "labels": [
+                "Blue",
+                "Relax",
+                "Travel",
+                "Jazz"
+            ],
+            "audioUrl": "Sean Hayes-Powerful Stuff.mp3",
+            "coverUrl": "Sean Hayes-Powerful Stuff.jpg",
+            "lyricsUrl": "Sean Hayes-Powerful Stuff.lrc"
+        },
+        {
+            "title": "Fairy Tale",
+            "singer": "Toni Braxton",
+            "labels": [
+                "Blue",
+                "Relax",
+                "SleepAid",
+                "FeelDown"
+            ],
+            "audioUrl": "Toni Braxton-Fairy Tale.mp3",
+            "coverUrl": "Toni Braxton-Fairy Tale.jpg",
+            "lyricsUrl": "Toni Braxton-Fairy Tale.lrc"
+        },
+        {
+            "title": "If I Knew",
+            "singer": "Bruno Mars",
+            "labels": [
+                "Blue",
+                "Relax",
+                "Party",
+                "Jazz"
+            ],
+            "audioUrl": "Bruno Mars-If I Knew.mp3",
+            "coverUrl": "Bruno Mars-If I Knew.jpg",
+            "lyricsUrl": "Bruno Mars-If I Knew.lrc"
+        },
+        {
+            "title": "Call of Silence",
+            "singer": "泽野弘之",
+            "labels": [
+                "Anime", "Studying", "Traval", "Release"
+            ],
+            "audioUrl": "Call of Silence.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Call of Silence.lrc"
+        },
+        {
+            "title": "吉他与孤独与蓝色星球",
+            "singer": "结束乐队",
+            "labels": [
+                "Pop", "Rock", "Anime", "Relax", "Driving"
+            ],
+            "audioUrl": "吉他与孤独与蓝色星球.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "吉他与孤独与蓝色星球.lrc"
+        },
+        {
+            "title": "轻飘飘时间",
+            "singer": "放学后茶话会",
+            "labels": [
+                "Pop", "Rock", "Anime", "Relax", "Driving"
+            ],
+            "audioUrl": "轻飘飘时间.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "轻飘飘时间.lrc"
+        },
+        {
+            "title": "无法传达的爱恋",
+            "singer": "小木曾雪菜",
+            "labels": [
+                "Anime", "Relax", "Driving", "Rock", "Pop", "FeelDown"
+            ],
+            "audioUrl": "无法传达的爱恋.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "无法传达的爱恋.lrc"
+        },
+        {
+            "title": "God Knows",
+            "singer": "凉宫春日",
+            "labels": [
+                "Anime", "Relax", "Driving", "Rock", "Pop"
+            ],
+            "audioUrl": "God Knows.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "God Knows.lrc"
+        },
+        {
+            "title": "克罗地亚狂想曲",
+            "singer": "纯音乐",
+            "labels": [
+                "Classical", "Instrumental", "Studying"
+            ],
+            "audioUrl": "克罗地亚狂想曲.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "三日月的舞",
+            "singer": "北宇治高中吹奏乐部",
+            "labels": [
+                "Classical", "Instrumental", "Studying", "Anime"
+            ],
+            "audioUrl": "三日月的舞.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "小星星变奏曲",
+            "singer": "纯音乐",
+            "labels": [
+                "Classical", "Instrumental", "Studying"
+            ],
+            "audioUrl": "小星星变奏曲.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "一步之遥",
+            "singer": "纯音乐",
+            "labels": [
+                "Classical", "Instrumental", "Studying"
+            ],
+            "audioUrl": "一步之遥.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "天堂与地狱序曲",
+            "singer": "纯音乐",
+            "labels": [
+                "Classical","Instrumental","Studying"
+            ],
+            "audioUrl": "天堂与地狱序曲.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "致爱丽丝",
+            "singer": "纯音乐",
+            "labels": [
+                "Classical","Instrumental","Studying","Relax"
+            ],
+            "audioUrl": "致爱丽丝.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "鞑靼人舞曲",
+            "singer": "纯音乐",
+            "labels": [
+                "Classical", "Instrumental", "Studying"
+            ],
+            "audioUrl": "鞑靼人舞曲.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "波西米亚狂想曲",
+            "singer": "皇后乐队",
+            "labels": [
+                "Rock", "Pop", "Classical", "Party", "Driving"
+            ],
+            "audioUrl": "波西米亚狂想曲.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "波西米亚狂想曲.lrc"
+        },
+        {
+            "title": "red moon",
+            "singer": "Lil",
+            "labels": [
+                "HipHop", "Rock"
+            ],
+            "audioUrl": "red moon.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "red moon.lrc"
+        },
+        {
+            "title": "YOSEMITE",
+            "singer": "Travis",
+            "labels": [
+                "HipHop",
+                "Rock"
+            ],
+            "audioUrl": "YOSEMITE.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "YOSEMITE.lrc"
+        },
+        {
+            "title": "Bad News",
+            "singer": "YCK",
+            "labels": [
+                "HipHop",
+                "Rock"
+            ],
+            "audioUrl": "BadNews.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "BadNews.lrc"
+        },
+        {
+            "title": "Be Alone",
+            "singer": "Blxst",
+            "labels": [
+                "HipHop",
+                "Rock"
+            ],
+            "audioUrl": "Be Alone.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Be Alone.lrc"
+        },
+        {
+            "title": "So What",
+            "singer": "P!nk",
+            "labels": [
+                "Jazz", "Rock", "Driving", "Release"
+            ],
+            "audioUrl": "So What.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "So What.lrc"
+        },
+        {
+            "title": "Stardust",
+            "singer": "纯音乐",
+            "labels": [
+                "Jazz", "Instrumental"
+            ],
+            "audioUrl": "Stardust.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": ""
+        },
+        {
+            "title": "Misty",
+            "singer": "Kenny G",
+            "labels": [
+                "Jazz", "Party"
+            ],
+            "audioUrl": "Misty.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "Misty.lrc"
+        },
+        {
+            "title": "My One And Only Love",
+            "singer": "John Coltrane",
+            "labels": [
+                "Jazz", "Pop"
+            ],
+            "audioUrl": "My One And Only Love.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "My One And Only Love.lrc"
+        },
+        {
+            "title": "杀死那个石家庄人",
+            "singer": "万能青年旅店",
+            "labels": [
+                "Rock", "Jazz", "Pop", "Driving", "Traval"
+            ],
+            "audioUrl": "杀死那个石家庄人.mp3",
+            "coverUrl": "temp.jpg",
+            "lyricsUrl": "杀死那个石家庄人.lrc"
         }
     ],
     "playlists": [
@@ -71,6 +949,314 @@
                     "trackOrder": 1
                 }
             ]
-        }
+        },
+        {
+            "name": "周杰伦精选",
+            "description": "周董经典作品合集",
+            "items": [
+              {
+                "musicAudioUrl": "周杰伦-稻香.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "周杰伦-告白气球.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "周杰伦-青花瓷.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "周杰伦-一路向北.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "周杰伦-半岛铁盒.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "周杰伦-园游会.mp3",
+                "trackOrder": 6
+              }
+            ]
+          },
+          {
+            "name": "摇滚能量",
+            "description": "释放激情的摇滚精选",
+            "items": [
+              {
+                "musicAudioUrl": "谢霆锋-潜龙勿用.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "ONE OK ROCK-The Beginning.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "谢霆锋-活着Viva.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "The Beatles-Hey Jude.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "Queen-We Will Rock You.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "初音ミク&米津玄師-砂の惑星.mp3",
+                "trackOrder": 6
+              }
+            ]
+          },
+          {
+            "name": "电子节奏",
+            "description": "动感电子音乐合集",
+            "items": [
+              {
+                "musicAudioUrl": "渡会雲雀-ハイド・アンド・シーク.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "初音ミク&米津玄師-砂の惑星.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "植松伸夫-Rodeo de Chocobo.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "Tobu&Itro-Sunburst.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "marshmello-Alone.mp3",
+                "trackOrder": 5
+              }
+            ]
+          },
+          {
+            "name": "民谣时光",
+            "description": "温暖治愈的民谣作品",
+            "items": [
+              {
+                "musicAudioUrl": "赵雷-成都.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "陈粒-易燃易爆炸.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "陈粒-走马.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "Novo Amor&Lowswimmer-Ontario.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "毛不易-东北民谣.mp3",
+                "trackOrder": 5
+              }
+            ]
+          },
+          {
+            "name": "蓝调之夜",
+            "description": "慵懒迷人的蓝调音乐",
+            "items": [
+              {
+                "musicAudioUrl": "Eric Clapton-One Track Mind.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "Tinsley Ellis-Kiss Of Death.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "Sean Hayes-Powerful Stuff.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "Toni Braxton-Fairy Tale.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "Bruno Mars-If I Knew.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "方大同-特别的人.mp3",
+                "trackOrder": 6
+              }
+            ]
+          },
+          {
+            "name": "华语流行精选",
+            "description": "热门华语歌曲合集",
+            "items": [
+              {
+                "musicAudioUrl": "周杰伦-稻香.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "蔡健雅-红色高跟鞋.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "方大同-特别的人.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "许嵩-有何不可.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "薛之谦-演员.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "陈粒-易燃易爆炸.mp3",
+                "trackOrder": 6
+              }
+            ]
+          },
+          {
+            "name": "旅行歌单",
+            "description": "适合旅途聆听的音乐",
+            "items": [
+              {
+                "musicAudioUrl": "周杰伦-稻香.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "周杰伦-告白气球.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "周杰伦-一路向北.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "Tobu&Itro-Sunburst.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "赵雷-成都.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "毛不易-东北民谣.mp3",
+                "trackOrder": 6
+              },
+              {
+                "musicAudioUrl": "The Beatles-Hey Jude.mp3",
+                "trackOrder": 7
+              }
+            ]
+          },
+          {
+            "name": "学习工作专注",
+            "description": "帮助集中注意力的背景音乐",
+            "items": [
+              {
+                "musicAudioUrl": "周杰伦-青花瓷.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "周杰伦-半岛铁盒.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "渡会雲雀-ハイド・アンド・シーク.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "植松伸夫-Rodeo de Chocobo.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "陈粒-走马.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "Novo Amor&Lowswimmer-Ontario.mp3",
+                "trackOrder": 6
+              },
+              {
+                "musicAudioUrl": "薛之谦-演员.mp3",
+                "trackOrder": 7
+              }
+            ]
+          },
+          {
+            "name": "心情低落治愈",
+            "description": "抚慰心灵的温暖音乐",
+            "items": [
+              {
+                "musicAudioUrl": "周杰伦-稻香.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "周杰伦-一路向北.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "方大同-特别的人.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "薛之谦-演员.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "Toni Braxton-Fairy Tale.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "毛不易-东北民谣.mp3",
+                "trackOrder": 6
+              },
+              {
+                "musicAudioUrl": "赵雷-成都.mp3",
+                "trackOrder": 7
+              }
+            ]
+          },
+          {
+            "name": "健身动力",
+            "description": "锻炼时的能量补给",
+            "items": [
+              {
+                "musicAudioUrl": "ONE OK ROCK-The Beginning.mp3",
+                "trackOrder": 1
+              },
+              {
+                "musicAudioUrl": "谢霆锋-活着Viva.mp3",
+                "trackOrder": 2
+              },
+              {
+                "musicAudioUrl": "Queen-We Will Rock You.mp3",
+                "trackOrder": 3
+              },
+              {
+                "musicAudioUrl": "初音ミク&米津玄師-砂の惑星.mp3",
+                "trackOrder": 4
+              },
+              {
+                "musicAudioUrl": "Tobu&Itro-Sunburst.mp3",
+                "trackOrder": 5
+              },
+              {
+                "musicAudioUrl": "marshmello-Alone.mp3",
+                "trackOrder": 6
+              },
+              {
+                "musicAudioUrl": "谢霆锋-潜龙勿用.mp3",
+                "trackOrder": 7
+              }
+            ]
+          }
     ]
 }

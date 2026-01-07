@@ -36,6 +36,11 @@ const routes = [
             keepAlive: true
         }
     },
+    {
+        path: '/temp-playlist',
+        name: 'TempPlaylist',
+        component: () => import('@/views/TempPlaylistDetail.vue')
+    }
 ]
 
 const router = createRouter({
